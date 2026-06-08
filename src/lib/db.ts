@@ -12,8 +12,10 @@
  * Admin actions import getPrisma() directly and are quarantined in src/admin/actions.ts.
  */
 
+import type { PrismaClient } from "@prisma/client";
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient: _PrismaClientImpl } = require("@prisma/client");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { PrismaD1 } = require("@prisma/adapter-d1");
 
@@ -36,9 +38,6 @@ const SCOPED_MODELS = new Set([
   "proposalView",
 ]);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyPrisma = any;
-
 /**
  * Raw Prisma client backed by a D1 binding.
  * Use this only in:
@@ -46,9 +45,9 @@ type AnyPrisma = any;
  *   - Global pricing plane reads (niches, benchmarks, multipliers, etc.)
  *   - Better Auth database adapter
  */
-export function getPrisma(d1: CloudflareEnv["DB"]): AnyPrisma {
+export function getPrisma(d1: CloudflareEnv["DB"]): PrismaClient {
   const adapter = new PrismaD1(d1);
-  return new PrismaClient({ adapter });
+  return new _PrismaClientImpl({ adapter }) as unknown as PrismaClient;
 }
 
 /**
@@ -62,10 +61,11 @@ export function getPrisma(d1: CloudflareEnv["DB"]): AnyPrisma {
  *   const profile = await db.creatorProfile.findUnique({ where: { id } });
  *   // accountId filter is applied automatically — can never leak cross-account data
  */
-export function getScopedDb(d1: CloudflareEnv["DB"], accountId: string): AnyPrisma {
+export function getScopedDb(d1: CloudflareEnv["DB"], accountId: string): PrismaClient {
   const prisma = getPrisma(d1);
 
-  return prisma.$extends({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (prisma as any).$extends({
     query: {
       $allModels: {
         async $allOperations({
@@ -89,7 +89,8 @@ export function getScopedDb(d1: CloudflareEnv["DB"], accountId: string): AnyPris
           if (operation === "create" || operation === "createMany") {
             if (args.data) {
               args.data = Array.isArray(args.data)
-                ? args.data.map((d: AnyPrisma) => ({ ...d, accountId }))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ? args.data.map((d: any) => ({ ...d, accountId }))
                 : { ...args.data, accountId };
             }
           }
@@ -113,5 +114,5 @@ export function getScopedDb(d1: CloudflareEnv["DB"], accountId: string): AnyPris
         },
       },
     },
-  });
+  }) as unknown as PrismaClient;
 }

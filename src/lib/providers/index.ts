@@ -50,7 +50,7 @@ export function buildProvider(
 ): AnalyticsProvider {
   switch (name) {
     case "SEEDED":
-      return new SeededProvider(prisma as Parameters<typeof SeededProvider>[0]);
+      return new SeededProvider(prisma as unknown as ConstructorParameters<typeof SeededProvider>[0]);
     case "MANUAL":
       if (!manualData) throw new Error("ManualProvider requires manualData");
       return new ManualProvider(manualData);
