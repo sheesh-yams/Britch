@@ -1,0 +1,42 @@
+{
+  "name": "britch-scaffold",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "build:worker": "npx @opennextjs/cloudflare build",
+    "preview": "npx wrangler dev",
+    "deploy": "npx @opennextjs/cloudflare build && npx wrangler deploy",
+    "db:generate": "npx prisma generate",
+    "db:migrate:local": "npx wrangler d1 migrations apply britch-db --local",
+    "db:migrate:remote": "npx wrangler d1 migrations apply britch-db --remote",
+    "seed:local": "npx wrangler d1 execute britch-db --local --file=./prisma/seed.sql",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@prisma/adapter-d1": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@react-pdf/renderer": "^4.5.1",
+    "better-auth": "^1.6.14",
+    "nanoid": "^5.1.11",
+    "next": "16.2.7",
+    "prisma": "^7.8.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "resend": "^6.12.4",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "^1.19.11",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "wrangler": "^4.98.0"
+  }
+}

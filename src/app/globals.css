@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+/* ============================================================
+   BRITCH — design tokens
+   editorial-brutalist · ink-dominant · volt accent
+   ============================================================ */
+
+:root {
+  --ink:     #0E0E12;
+  --ink-2:   #16161C;
+  --ink-3:   #20202A;
+  --paper:   #F4F1E9;
+  --paper-2: #E7E2D4;
+  --volt:    #D6FB46;
+  --flush:   #FF4365;
+  --electric:#2D2DF5;
+
+  --line:        1.5px solid var(--ink);
+  --line-paper:  1.5px solid var(--paper);
+  --shadow-hard: 4px 4px 0 var(--ink);
+  --shadow-volt: 5px 5px 0 var(--volt);
+  --shadow-flush:5px 5px 0 var(--flush);
+  --shadow-paper:4px 4px 0 var(--paper);
+  --r: 5px;
+
+  --maxw: 1280px;
+
+  /* shadcn/ui CSS variables (mapped to Britch palette) */
+  --background: 0 0% 5%;        /* ~ink */
+  --foreground: 40 18% 92%;     /* ~paper */
+  --card: 240 8% 11%;
+  --card-foreground: 40 18% 92%;
+  --popover: 240 8% 11%;
+  --popover-foreground: 40 18% 92%;
+  --primary: 74 95% 63%;        /* volt */
+  --primary-foreground: 240 8% 7%;
+  --secondary: 240 6% 17%;
+  --secondary-foreground: 40 18% 92%;
+  --muted: 240 6% 17%;
+  --muted-foreground: 40 10% 65%;
+  --accent: 240 6% 17%;
+  --accent-foreground: 40 18% 92%;
+  --destructive: 349 95% 61%;   /* flush */
+  --destructive-foreground: 40 18% 92%;
+  --border: 240 6% 17%;
+  --input: 240 6% 17%;
+  --ring: 74 95% 63%;
+  --radius: 5px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-general-sans), 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--volt); color: var(--ink); }
+
+a { color: inherit; text-decoration: none; }
+
+/* ---- layout ---- */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 32px; }
+
+/* ---- typography ---- */
+.display {
+  font-family: var(--font-clash-display), sans-serif;
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+/* ---- highlighter swipe ---- */
+.swipe {
+  position: relative;
+  display: inline;
+  z-index: 0;
+}
+.swipe::before {
+  content: "";
+  position: absolute;
+  left: -4px; right: -4px;
+  top: 12%; bottom: 8%;
+  background: var(--volt);
+  z-index: -1;
+  transform: rotate(-1.2deg) skewX(-6deg);
+}
+.swipe--flush::before { background: var(--flush); }
+.swipe--ink { color: var(--ink); }
+
+/* hide scrollbar but allow scroll */
+.scroll-x { overflow-x: auto; scrollbar-width: none; }
+.scroll-x::-webkit-scrollbar { display: none; }

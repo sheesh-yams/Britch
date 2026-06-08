@@ -1,2 +1,37 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+
+# OpenNext / Cloudflare build
+.open-next/
+.wrangler/
+.dev.vars
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# TypeScript
+*.tsbuildinfo
+
+# OS
 .DS_Store
-**/.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test
+coverage/

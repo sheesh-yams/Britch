@@ -1,0 +1,32 @@
+name = "britch"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# OpenNext — builds to .open-next/
+main = ".open-next/worker.js"
+assets = { directory = ".open-next/assets" }
+
+[[d1_databases]]
+binding = "DB"
+database_name = "britch-db"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "britch-assets"
+
+[vars]
+TURNSTILE_SECRET_KEY = "REPLACE_WITH_TURNSTILE_SECRET"
+NEXT_PUBLIC_TURNSTILE_SITE_KEY = "REPLACE_WITH_TURNSTILE_SITE_KEY"
+BETTER_AUTH_SECRET = "REPLACE_WITH_RANDOM_32_CHAR_SECRET"
+BETTER_AUTH_URL = "http://localhost:3000"
+NEXT_PUBLIC_APP_URL = "http://localhost:3000"
+R2_PUBLIC_URL = ""  # Set to your R2 public bucket URL after deploy (e.g. https://pub-xxx.r2.dev)
+
+# Local dev overrides
+[dev]
+port = 3000
