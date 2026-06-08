@@ -1,8 +1,8 @@
 import { getPrisma }         from "@/lib/db";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export default async function AdminDashboard() {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const prisma  = getPrisma(env.DB);
 
   const [niches, cpmCount, multCount, seedCount, engineParams, providerConfig] = await Promise.all([

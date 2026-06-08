@@ -4,14 +4,14 @@
  */
 
 import { notFound }          from "next/navigation";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getPrisma }         from "@/lib/db";
 import { formatCents }       from "@/lib/money";
 import BrandMark             from "@/components/britch/BrandMark";
 import ProposalStatus        from "@/components/britch/ProposalStatus";
 
 export default async function PublicProposalPage({ params }: { params: { token: string } }) {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const prisma  = getPrisma(env.DB);
 
   const proposal = await prisma.proposal.findUnique({

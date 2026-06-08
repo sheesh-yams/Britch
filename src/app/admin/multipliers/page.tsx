@@ -1,9 +1,9 @@
 import { getPrisma }         from "@/lib/db";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { formatMultiplier }  from "@/lib/money";
 
 export default async function MultipliersPage() {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const prisma  = getPrisma(env.DB);
   const rows    = await prisma.formatMultiplier.findMany({ orderBy: [{ platform: "asc" }, { deliverableType: "asc" }] });
 

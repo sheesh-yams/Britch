@@ -1,8 +1,8 @@
 import { getPrisma }         from "@/lib/db";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export default async function ProvidersPage() {
-  const { env }    = getRequestContext();
+  const { env }    = getCloudflareContext();
   const prisma     = getPrisma(env.DB);
   const config     = await prisma.providerConfig.findFirst();
 

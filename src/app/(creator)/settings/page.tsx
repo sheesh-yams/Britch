@@ -1,10 +1,10 @@
 import { headers }           from "next/headers";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getSession }        from "@/lib/auth";
 import { getScopedDb }       from "@/lib/db";
 
 export default async function SettingsPage() {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const session = await getSession(env.DB, await headers());
   if (!session) return null;
 

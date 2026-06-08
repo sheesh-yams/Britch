@@ -7,7 +7,7 @@
  */
 
 import { headers }  from "next/headers";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { requireSession }    from "@/lib/auth";
 import AppShell              from "@/components/layout/AppShell";
 
@@ -16,7 +16,7 @@ export default async function CreatorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const session = await requireSession(env.DB, await headers());
 
   return <AppShell user={session.user}>{children}</AppShell>;

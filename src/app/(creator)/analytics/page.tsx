@@ -1,12 +1,12 @@
 import { headers }           from "next/headers";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getSession }        from "@/lib/auth";
 import { getScopedDb }       from "@/lib/db";
 import { formatBps }         from "@/lib/money";
 import AudiencePanel         from "@/components/britch/AudiencePanel";
 
 export default async function AnalyticsPage() {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const session = await getSession(env.DB, await headers());
   if (!session) return null;
 

@@ -12,7 +12,7 @@
 
 import { redirect } from "next/navigation";
 import { headers }  from "next/headers";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getSession }        from "@/lib/auth";
 import AdminShell            from "@/components/layout/AdminShell";
 
@@ -21,7 +21,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const session = await getSession(env.DB, await headers());
 
   if (!session?.user) redirect("/sign-in");

@@ -16,12 +16,12 @@
 import { getPrisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { headers }    from "next/headers";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // ── Role guard ────────────────────────────────────────────────────────────────
 
 export async function requireAdminRole(): Promise<void> {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const session = await getSession(env.DB, await headers());
   if (!session?.user) throw new Error("Not authenticated");
   if (session.user.role !== "ADMIN") throw new Error("Forbidden: admin only");
@@ -31,7 +31,7 @@ export async function requireAdminRole(): Promise<void> {
 
 export async function createNiche(slug: string, label: string, order: number) {
   await requireAdminRole();
-  const { env } = getRequestContext(); const prisma = getPrisma(env.DB);
+  const { env } = getCloudflareContext(); const prisma = getPrisma(env.DB);
   return prisma.niche.create({ data: { slug, label, order, isActive: true } });
 }
 
@@ -40,7 +40,7 @@ export async function updateNiche(
   data: Partial<{ label: string; isActive: boolean; order: number }>
 ) {
   await requireAdminRole();
-  const { env } = getRequestContext(); const prisma = getPrisma(env.DB);
+  const { env } = getCloudflareContext(); const prisma = getPrisma(env.DB);
   return prisma.niche.update({ where: { id }, data });
 }
 
@@ -54,7 +54,7 @@ export async function upsertCpmBenchmark(input: {
   source?: string;
 }) {
   await requireAdminRole();
-  const { env } = getRequestContext(); const prisma = getPrisma(env.DB);
+  const { env } = getCloudflareContext(); const prisma = getPrisma(env.DB);
   return prisma.cpmBenchmark.upsert({
     where: {
       platform_nicheId_followerTier: {
@@ -76,7 +76,7 @@ export async function upsertFormatMultiplier(input: {
   multiplierBps: number;
 }) {
   await requireAdminRole();
-  const { env } = getRequestContext(); const prisma = getPrisma(env.DB);
+  const { env } = getCloudflareContext(); const prisma = getPrisma(env.DB);
   return prisma.formatMultiplier.upsert({
     where: { platform_deliverableType: { platform: input.platform, deliverableType: input.deliverableType } },
     update: { multiplierBps: input.multiplierBps },
@@ -101,13 +101,13 @@ export async function updateEngineParams(
   }>
 ) {
   await requireAdminRole();
-  const { env } = getRequestContext(); const prisma = getPrisma(env.DB);
+  const { env } = getCloudflareContext(); const prisma = getPrisma(env.DB);
   return prisma.engineParams.update({ where: { id }, data });
 }
 
 export async function getActiveEngineParams() {
   // Engine params reads don't require admin — but this fn lives here for locality
-  const { env } = getRequestContext(); const prisma = getPrisma(env.DB);
+  const { env } = getCloudflareContext(); const prisma = getPrisma(env.DB);
   return prisma.engineParams.findFirst({ where: { isActive: true } });
 }
 
@@ -121,7 +121,7 @@ export async function upsertSeedCreator(input: {
   postSample: object[];
 }) {
   await requireAdminRole();
-  const { env } = getRequestContext(); const prisma = getPrisma(env.DB);
+  const { env } = getCloudflareContext(); const prisma = getPrisma(env.DB);
   return prisma.seedCreator.upsert({
     where: { handle_platform: { handle: input.handle, platform: input.platform } },
     update: { displayName: input.displayName, snapshot: input.snapshot, postSample: input.postSample },
@@ -136,7 +136,7 @@ export async function updateProviderConfig(input: {
   oembedTokens?: object;
 }) {
   await requireAdminRole();
-  const { env } = getRequestContext(); const prisma = getPrisma(env.DB);
+  const { env } = getCloudflareContext(); const prisma = getPrisma(env.DB);
   const existing = await prisma.providerConfig.findFirst();
   if (!existing) {
     return prisma.providerConfig.create({

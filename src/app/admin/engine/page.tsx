@@ -1,9 +1,9 @@
 import { getPrisma }         from "@/lib/db";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { formatBps, formatCents, formatMultiplier } from "@/lib/money";
 
 export default async function EnginePage() {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const prisma  = getPrisma(env.DB);
   const ep      = await prisma.engineParams.findFirst({ where: { isActive: true } });
 

@@ -13,7 +13,7 @@
  */
 
 import { notFound }          from "next/navigation";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getPrisma }         from "@/lib/db";
 import { computeRate, DEFAULT_ENGINE_PARAMS } from "@/lib/engine";
 import { formatCents, formatBps }             from "@/lib/money";
@@ -81,7 +81,7 @@ export default async function RatePagePublic({
 }: {
   params: { token: string };
 }) {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const prisma      = getPrisma(env.DB);
   const token       = params.token;
 

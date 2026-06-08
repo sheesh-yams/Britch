@@ -1,9 +1,9 @@
 import { getPrisma }         from "@/lib/db";
-import { getRequestContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { formatCents }       from "@/lib/money";
 
 export default async function BenchmarksPage() {
-  const { env } = getRequestContext();
+  const { env } = getCloudflareContext();
   const prisma  = getPrisma(env.DB);
   const rows    = await prisma.cpmBenchmark.findMany({ orderBy: [{ platform: "asc" }, { followerTier: "asc" }] });
 
