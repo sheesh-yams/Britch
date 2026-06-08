@@ -6,9 +6,6 @@ compatibility_flags = ["nodejs_compat"]
 main = ".open-next/worker.js"
 assets = { directory = ".open-next/assets" }
 
-[build]
-command = "npm run build:worker"
-
 [[d1_databases]]
 binding = "DB"
 database_name = "britch-db"

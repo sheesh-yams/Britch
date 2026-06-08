@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "[ \"$NEXT_BUILD_ONLY\" = \"1\" ] && next build || NEXT_BUILD_ONLY=1 npx @opennextjs/cloudflare build",
+    "build:next": "next build",
     "build:worker": "npx @opennextjs/cloudflare build",
     "start": "next start",
     "preview": "npx wrangler dev",
