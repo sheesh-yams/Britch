@@ -1,5 +1,5 @@
 name = "britch"
-compatibility_date = "2024-09-23"
+compatibility_date = "2025-05-01"
 compatibility_flags = ["nodejs_compat"]
 
 # OpenNext — builds to .open-next/
