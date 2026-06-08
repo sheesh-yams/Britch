@@ -11,7 +11,7 @@ const sizes = {
   lg: { box: 40, font: 24, word: 24 },
 };
 
-export function BrandMark({ size = "md", href }: BrandMarkProps) {
+export default function BrandMark({ size = "md", href }: BrandMarkProps) {
   const s = sizes[size];
   const inner = (
     <span
