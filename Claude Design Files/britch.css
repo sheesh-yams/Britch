@@ -1,0 +1,215 @@
+/* ============================================================
+   BRITCH — editorial-brutalist rate page system
+   Ink-dominant base, Volt accent, hard-edged everything
+   ============================================================ */
+
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=general-sans@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --ink:     #0E0E12;
+  --ink-2:   #16161C;   /* raised panel on ink */
+  --ink-3:   #20202A;   /* hairline / muted */
+  --paper:   #F4F1E9;
+  --paper-2: #E7E2D4;
+  --volt:    #D6FB46;
+  --flush:   #FF4365;
+  --electric:#2D2DF5;
+
+  --line: 1.5px solid var(--ink);
+  --line-paper: 1.5px solid var(--paper);
+  --shadow-hard: 4px 4px 0 var(--ink);
+  --shadow-volt: 5px 5px 0 var(--volt);
+  --shadow-flush: 5px 5px 0 var(--flush);
+  --shadow-paper: 4px 4px 0 var(--paper);
+
+  --r: 5px;
+
+  --display: 'Clash Display', sans-serif;
+  --sans: 'General Sans', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'Space Mono', 'Courier New', monospace;
+
+  --maxw: 1280px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--volt); color: var(--ink); }
+
+a { color: inherit; text-decoration: none; }
+
+/* ---------- typographic primitives ---------- */
+.display {
+  font-family: var(--display);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+.mono { font-family: var(--mono); font-feature-settings: "tnum" 1; }
+.tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.kicker {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* ---------- layout shell ---------- */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 32px; }
+
+.section { padding: 64px 0; border-top: var(--line-paper); }
+.section--tight { padding: 40px 0; }
+
+/* section number + label header, color-blocked */
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.sec-head .num {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--volt);
+  padding: 4px 9px;
+  letter-spacing: 0.05em;
+}
+.sec-head h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 0.95;
+  margin: 0;
+}
+.sec-head .aside {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--paper-2);
+  text-align: right;
+}
+
+/* ---------- cards / panels ---------- */
+.panel {
+  background: var(--paper);
+  color: var(--ink);
+  border: var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-hard);
+}
+.panel-ink {
+  background: var(--ink-2);
+  color: var(--paper);
+  border: var(--line-paper);
+  border-radius: var(--r);
+}
+
+/* ---------- chips ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: var(--line-paper);
+  background: transparent;
+  color: var(--paper);
+  white-space: nowrap;
+}
+.chip--ink { border: var(--line); color: var(--ink); }
+.chip--volt { background: var(--volt); color: var(--ink); border-color: var(--ink); }
+.chip--flush { background: var(--flush); color: var(--paper); border-color: var(--ink); }
+
+/* status dot */
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--volt); display: inline-block; }
+.dot--live { box-shadow: 0 0 0 0 rgba(214,251,70,0.8); animation: pulse 2s infinite; }
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(214,251,70,0.7); }
+  70%  { box-shadow: 0 0 0 7px rgba(214,251,70,0); }
+  100% { box-shadow: 0 0 0 0 rgba(214,251,70,0); }
+}
+
+/* ---------- highlighter swipe ---------- */
+.swipe {
+  position: relative;
+  display: inline;
+  z-index: 0;
+}
+.swipe::before {
+  content: "";
+  position: absolute;
+  left: -4px; right: -4px;
+  top: 12%; bottom: 8%;
+  background: var(--volt);
+  z-index: -1;
+  transform: rotate(-1.2deg) skewX(-6deg);
+}
+.swipe--flush::before { background: var(--flush); }
+.swipe--ink { color: var(--ink); }
+
+/* ---------- buttons ---------- */
+.btn {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 15px 22px;
+  border: var(--line);
+  border-radius: var(--r);
+  background: var(--volt);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow-hard);
+  transition: transform .08s ease, box-shadow .08s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.btn--flush { background: var(--flush); color: var(--paper); }
+.btn--paper { background: var(--paper); color: var(--ink); }
+.btn--ghost { background: transparent; color: var(--paper); border: var(--line-paper); box-shadow: 4px 4px 0 var(--paper); }
+.btn--ghost:hover { box-shadow: 6px 6px 0 var(--paper); }
+.btn--lg { padding: 20px 30px; font-size: 16px; }
+
+/* utility */
+.mono-num { font-family: var(--mono); font-weight: 700; letter-spacing: -0.01em; }
+.hr { height: 0; border: 0; border-top: var(--line-paper); margin: 0; }
+.muted { color: var(--paper-2); }
+.flush-text { color: var(--flush); }
+.volt-text { color: var(--volt); }
+
+/* hide scrollbar but allow scroll for chip rows */
+.scroll-x { overflow-x: auto; scrollbar-width: none; }
+.scroll-x::-webkit-scrollbar { display: none; }
