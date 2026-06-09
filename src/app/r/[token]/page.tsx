@@ -22,6 +22,8 @@ import RateCard       from "@/components/britch/RateCard";
 import AudiencePanel  from "@/components/britch/AudiencePanel";
 import Ticker         from "@/components/britch/Ticker";
 
+export const dynamic = "force-dynamic";
+
 // ── Types for the frozen / computed rate records stored in RatePage ────────────
 
 interface FrozenDeliverable {

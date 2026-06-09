@@ -10,6 +10,8 @@ import { formatCents }       from "@/lib/money";
 import BrandMark             from "@/components/britch/BrandMark";
 import ProposalStatus        from "@/components/britch/ProposalStatus";
 
+export const dynamic = "force-dynamic";
+
 export default async function PublicProposalPage({ params }: { params: { token: string } }) {
   const { env } = getCloudflareContext();
   const prisma  = getPrisma(env.DB);

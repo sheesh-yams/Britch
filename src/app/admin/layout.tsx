@@ -16,6 +16,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getSession }        from "@/lib/auth";
 import AdminShell            from "@/components/layout/AdminShell";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {
