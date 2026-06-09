@@ -92,7 +92,7 @@ export default async function RatePagePublic({
       creatorAccount: {
         include: {
           profile:       true,
-          socialAccounts: { where: { isActive: true } },
+          socialAccounts: { where: { disconnectedAt: null } },
         },
       },
     },
@@ -412,19 +412,17 @@ async function computeLiveRates(prisma: any, creatorAccount: any): Promise<Froze
 
     for (const sa of socialAccounts) {
       const platform = sa.platform as "TIKTOK" | "INSTAGRAM";
-      const snapshot = sa.snapshot as Record<string, unknown> | null;
-      if (!snapshot) continue;
-
-      const followers         = Number(snapshot.followers        ?? 0);
-      const engagementRateBps = Number(snapshot.engagementRateBps ?? 0);
+      const followers         = Number(sa.followers         ?? 0);
+      const engagementRateBps = Number(sa.engagementRateBps ?? 0);
+      const rawAudience       = sa.audience as Record<string, unknown> | null;
       const rawPostSample     = sa.postSample as { views: number; isPaid: boolean }[] | null ?? [];
-      const organicViews      = rawPostSample.filter(p => !p.isPaid).map(p => p.views);
+      const organicViews      = rawPostSample.filter((p: { views: number; isPaid: boolean }) => !p.isPaid).map((p: { views: number; isPaid: boolean }) => p.views);
 
-      if (snapshot.handle) handles[platform] = String(snapshot.handle);
+      if (sa.handle) handles[platform] = sa.handle;
 
       // Merge audience from first social account that has it
-      if (!audience.gender && snapshot.audience) {
-        const aud = snapshot.audience as Record<string, unknown>;
+      if (!audience.gender && rawAudience) {
+        const aud = rawAudience as Record<string, unknown>;
         audience.gender       = aud.gender       as Record<string, number> | undefined;
         audience.ageBands     = aud.ageBands     as Record<string, number> | undefined;
         audience.topCountries = aud.topCountries as { code: string; label: string; pct: number }[] | undefined;
@@ -437,7 +435,7 @@ async function computeLiveRates(prisma: any, creatorAccount: any): Promise<Froze
 
       for (const d of dbDeliverables) {
         const fmRow = await prisma.formatMultiplier.findFirst({
-          where: { platform, deliverableType: d.deliverableType, isActive: true },
+          where: { platform, deliverableType: d.type, isActive: true },
         });
         const cpmRow = await prisma.cpmBenchmark.findFirst({
           where: { platform, isActive: true },
@@ -461,7 +459,7 @@ async function computeLiveRates(prisma: any, creatorAccount: any): Promise<Froze
         deliverables.push({
           id:              d.id,
           platform,
-          deliverableType: d.deliverableType,
+          deliverableType: d.type,
           label:           d.label ?? undefined,
           ...result,
           followers,

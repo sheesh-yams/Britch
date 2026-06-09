@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev --turbopack",
-    "build": "[ \"$NEXT_BUILD_ONLY\" = \"1\" ] && next build || NEXT_BUILD_ONLY=1 npx @opennextjs/cloudflare build",
+    "build": "if [ \"$NEXT_BUILD_ONLY\" = \"1\" ]; then next build; else NEXT_BUILD_ONLY=1 npx @opennextjs/cloudflare build; fi",
     "build:next": "next build",
     "build:worker": "npx @opennextjs/cloudflare build",
     "start": "next start",

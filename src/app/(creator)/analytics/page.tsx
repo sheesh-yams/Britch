@@ -11,7 +11,7 @@ export default async function AnalyticsPage() {
   if (!session) return null;
 
   const db      = getScopedDb(env.DB, session.user.id);
-  const socials = await db.socialAccount.findMany({ where: { isActive: true } });
+  const socials = await db.socialAccount.findMany({ where: { disconnectedAt: null } });
 
   return (
     <div style={{ padding: "40px 32px", maxWidth: 900 }}>
@@ -22,10 +22,7 @@ export default async function AnalyticsPage() {
       )}
 
       {socials.map(sa => {
-        const snap = sa.snapshot as Record<string, unknown> | null;
-        const audience = snap?.audience as { gender?: Record<string, number>; ageBands?: Record<string, number>; topCountries?: { code: string; label: string; pct: number }[] } | undefined;
-        const followers = Number(snap?.followers ?? 0);
-        const engBps    = Number(snap?.engagementRateBps ?? 0);
+        const audience = sa.audience as { gender?: Record<string, number>; ageBands?: Record<string, number>; topCountries?: { code: string; label: string; pct: number }[] } | undefined;
 
         return (
           <div key={sa.id} style={{ marginBottom: 40 }}>
@@ -39,9 +36,9 @@ export default async function AnalyticsPage() {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 24 }}>
-              <Stat label="Followers"        value={followers.toLocaleString()} />
-              <Stat label="Engagement"       value={formatBps(engBps)} />
-              <Stat label="Avg Views"        value={Number(snap?.avgViews ?? 0).toLocaleString()} />
+              <Stat label="Followers"   value={sa.followers.toLocaleString()} />
+              <Stat label="Engagement"  value={formatBps(sa.engagementRateBps)} />
+              <Stat label="Avg Views"   value={sa.avgViews.toLocaleString()} />
             </div>
 
             {audience && <AudiencePanel audience={audience} />}

@@ -13,7 +13,7 @@ export default async function RatesPage() {
   const db         = getScopedDb(env.DB, session.user.id);
   const [ratePages, deliverables] = await Promise.all([
     db.ratePage.findMany({ orderBy: { updatedAt: "desc" } }),
-    db.deliverable.findMany({ where: { isActive: true }, orderBy: [{ platform: "asc" }, { deliverableType: "asc" }] }),
+    db.deliverable.findMany({ where: { isActive: true }, orderBy: [{ platform: "asc" }, { type: "asc" }] }),
   ]);
 
   return (
@@ -50,14 +50,14 @@ export default async function RatesPage() {
                 }}
               >
                 <span>
-                  {d.label ?? d.deliverableType}
+                  {d.label ?? d.type}
                   <span style={{ marginLeft: 8, fontFamily: "var(--font-space-mono)", fontSize: 11, opacity: 0.4 }}>{d.platform}</span>
                 </span>
                 <span style={{ fontFamily: "var(--font-space-mono)", fontSize: 12, color: "var(--paper)", opacity: 0.5 }}>
                   floor {formatCents(d.floorCents)}
                 </span>
                 <span style={{ fontFamily: "var(--font-clash-display)", fontSize: 16, color: "var(--volt)", fontWeight: 600 }}>
-                  {formatCents(d.targetCents)}
+                  {formatCents(d.finalRateCents)}
                 </span>
                 <span style={{ fontFamily: "var(--font-space-mono)", fontSize: 12, color: "var(--paper)", opacity: 0.5 }}>
                   stretch {formatCents(d.stretchCents)}
