@@ -68,7 +68,7 @@ async function logView(prisma: ReturnType<typeof getPrisma>, ratePageId: string,
     const ip  = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for") ?? null;
     const ua  = req.headers.get("user-agent") ?? null;
     const ref = req.headers.get("referer") ?? null;
-    await prisma.ratePageView.create({ data: { ratePageId, viewerIp: ip, userAgent: ua, referrer: ref } });
+    await prisma.ratePageView.create({ data: { ratePageId, ip: ip, userAgent: ua, referrer: ref } });
   } catch {
     // Non-critical — never block render
   }

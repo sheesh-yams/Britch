@@ -81,7 +81,7 @@ export default async function RatesPage() {
               >
                 <div>
                   <span style={{ fontFamily: "var(--font-general-sans)", fontSize: 14, color: "var(--paper)" }}>
-                    {rp.title ?? "Untitled rate page"}
+                    {rp.token}
                   </span>
                   <span style={{ marginLeft: 10, fontFamily: "var(--font-space-mono)", fontSize: 11, color: "var(--paper)", opacity: 0.4 }}>
                     {rp.status}

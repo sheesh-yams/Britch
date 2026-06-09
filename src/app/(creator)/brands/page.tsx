@@ -37,15 +37,15 @@ export default async function BrandsPage() {
                 <div style={{ fontFamily: "var(--font-general-sans)", fontSize: 15, color: "var(--paper)", fontWeight: 500 }}>
                   {b.name}
                 </div>
-                {b.website && (
+                {b.notes && (
                   <div style={{ fontFamily: "var(--font-space-mono)", fontSize: 11, color: "var(--paper)", opacity: 0.4, marginTop: 2 }}>
-                    {b.website}
+                    {b.notes}
                   </div>
                 )}
               </div>
-              {b.primaryContactEmail && (
+              {b.contactEmail && (
                 <span style={{ fontFamily: "var(--font-space-mono)", fontSize: 11, color: "var(--paper)", opacity: 0.35 }}>
-                  {b.primaryContactEmail}
+                  {b.contactEmail}
                 </span>
               )}
             </div>

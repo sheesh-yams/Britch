@@ -61,7 +61,7 @@ export default async function DashboardPage() {
           {ratePages.map(rp => (
             <RowItem
               key={rp.id}
-              label={rp.title ?? `Rate page · ${rp.token}`}
+              label={rp.token}
               meta={rp.status}
               href={`/r/${rp.token}`}
             />

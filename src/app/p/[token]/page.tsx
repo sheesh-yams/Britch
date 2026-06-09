@@ -16,14 +16,14 @@ export default async function PublicProposalPage({ params }: { params: { token: 
 
   const proposal = await prisma.proposal.findUnique({
     where:   { token: params.token },
-    include: { brand: { select: { name: true, website: true } } },
+    include: { brand: { select: { name: true } } },
   });
 
   if (!proposal) notFound();
 
   // Log view (fire-and-forget)
   try {
-    await prisma.proposalView.create({ data: { proposalId: proposal.id } });
+    await prisma.proposalView.create({ data: { proposalId: proposal.id, accountId: proposal.accountId } });
   } catch { /* non-critical */ }
 
   const lineItems = proposal.lineItems as { label: string; priceCents: number; qty: number }[] | null ?? [];
@@ -46,10 +46,10 @@ export default async function PublicProposalPage({ params }: { params: { token: 
           </p>
         )}
 
-        {proposal.message && (
+        {proposal.notes && (
           <div style={{ marginBottom: 32, padding: "20px", background: "var(--ink-2)", borderRadius: "var(--r)", borderLeft: "4px solid var(--volt)" }}>
             <p style={{ fontFamily: "var(--font-general-sans)", fontSize: 15, color: "var(--paper)", opacity: 0.8, lineHeight: 1.65, margin: 0 }}>
-              {proposal.message}
+              {proposal.notes}
             </p>
           </div>
         )}
@@ -78,16 +78,6 @@ export default async function PublicProposalPage({ params }: { params: { token: 
           </div>
         )}
 
-        {proposal.terms && (
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontFamily: "var(--font-space-mono)", fontSize: 10, color: "var(--paper)", opacity: 0.4, letterSpacing: "0.1em", marginBottom: 10 }}>
-              TERMS
-            </div>
-            <p style={{ fontFamily: "var(--font-general-sans)", fontSize: 13, color: "var(--paper)", opacity: 0.55, lineHeight: 1.7, margin: 0 }}>
-              {proposal.terms}
-            </p>
-          </div>
-        )}
 
         {proposal.status === "SENT" && (
           <div style={{ borderTop: "var(--line-paper)", paddingTop: 32 }}>
