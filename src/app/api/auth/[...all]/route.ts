@@ -3,25 +3,27 @@
  * Confirmed working on Workers/OpenNext — see SPIKES.md § Spike 2a
  */
 
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { createAuth } from "@/lib/auth";
 
-// Cloudflare Workers: env bindings come via the request context
-// OpenNext exposes them via process.env and the cloudflare() helper
-declare const process: { env: CloudflareEnv & NodeJS.ProcessEnv };
+// Route segment config — auth handlers must not be prerendered or statically analyzed
+export const dynamic = "force-dynamic";
 
-function getD1(): CloudflareEnv["DB"] {
-  // In Workers, D1 is available via the binding name set in wrangler.toml
-  // OpenNext/Next.js 15 exposes Cloudflare bindings via `getCloudflareContext()`
-  // For now use a type cast; wired properly in production via the CF adapter
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (process.env as any).DB as CloudflareEnv["DB"];
-}
+// Lazy: only construct better-auth + Prisma on first request, never at module load.
+// Module load happens during Next.js build ("Collecting page data") where there is
+// no Cloudflare context yet — instantiating Prisma there throws.
+type Handlers = { GET: (req: Request) => Response | Promise<Response>; POST: (req: Request) => Response | Promise<Response> };
+let handlers: Handlers | null = null;
 
-function makeHandlers() {
-  const auth = createAuth(getD1());
+function getHandlers(): Handlers {
+  if (handlers) return handlers;
+  const { env } = getCloudflareContext();
+  const auth = createAuth(env.DB);
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { toNextJsHandler } = require("better-auth/next-js");
-  return toNextJsHandler(auth);
+  handlers = toNextJsHandler(auth) as Handlers;
+  return handlers;
 }
 
-export const { GET, POST } = makeHandlers();
+export async function GET(req: Request)  { return getHandlers().GET(req); }
+export async function POST(req: Request) { return getHandlers().POST(req); }

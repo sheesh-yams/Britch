@@ -12,12 +12,8 @@
  * Admin actions import getPrisma() directly and are quarantined in src/admin/actions.ts.
  */
 
-import type { PrismaClient } from "@prisma/client";
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { PrismaClient: _PrismaClientImpl } = require("@prisma/client");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { PrismaD1 } = require("@prisma/adapter-d1");
+import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaD1 } from "@prisma/adapter-d1";
 
 // Creator-scoped models — every query on these MUST include accountId
 const SCOPED_MODELS = new Set([
@@ -47,7 +43,7 @@ const SCOPED_MODELS = new Set([
  */
 export function getPrisma(d1: CloudflareEnv["DB"]): PrismaClient {
   const adapter = new PrismaD1(d1);
-  return new _PrismaClientImpl({ adapter }) as unknown as PrismaClient;
+  return new PrismaClient({ adapter });
 }
 
 /**
