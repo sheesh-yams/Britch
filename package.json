@@ -10,7 +10,7 @@
     "build:worker": "npx @opennextjs/cloudflare build",
     "start": "next start",
     "preview": "npx wrangler dev",
-    "deploy": "npx @opennextjs/cloudflare build && npx wrangler deploy",
+    "deploy": "npm run build && npx wrangler deploy",
     "db:generate": "npx prisma generate",
     "db:migrate:local": "npx wrangler d1 migrations apply britch-db --local",
     "db:migrate:remote": "npx wrangler d1 migrations apply britch-db --remote",
@@ -21,7 +21,6 @@
   "dependencies": {
     "@prisma/adapter-d1": "^7.8.0",
     "@prisma/client": "^7.8.0",
-    "@react-pdf/renderer": "^4.5.1",
     "better-auth": "^1.6.14",
     "nanoid": "^5.1.11",
     "next": "16.2.7",
