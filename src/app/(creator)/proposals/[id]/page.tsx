@@ -67,13 +67,13 @@ export default async function ProposalDetailPage({ params }: { params: { id: str
         </div>
       )}
 
-      {proposal.message && (
+      {proposal.notes && (
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontFamily: "var(--font-space-mono)", fontSize: 10, color: "var(--paper)", opacity: 0.4, letterSpacing: "0.1em", marginBottom: 10 }}>
             MESSAGE
           </div>
           <p style={{ fontFamily: "var(--font-general-sans)", fontSize: 15, color: "var(--paper)", opacity: 0.7, lineHeight: 1.6, margin: 0 }}>
-            {proposal.message}
+            {proposal.notes}
           </p>
         </div>
       )}

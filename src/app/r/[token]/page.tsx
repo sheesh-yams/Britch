@@ -89,7 +89,7 @@ export default async function RatePagePublic({
   const ratePage = await prisma.ratePage.findUnique({
     where: { token },
     include: {
-      creatorAccount: {
+      account: {
         include: {
           profile:       true,
           socialAccounts: { where: { disconnectedAt: null } },
@@ -112,7 +112,7 @@ export default async function RatePagePublic({
   if (!rates) {
     // Fallback: compute live using SeededProvider data for this account's social accounts
     // This path runs for draft previews and for the demo before explicit publish
-    rates = await computeLiveRates(prisma, ratePage.creatorAccount);
+    rates = await computeLiveRates(prisma, ratePage.account);
   }
 
   if (!rates || rates.deliverables.length === 0) {
@@ -125,7 +125,7 @@ export default async function RatePagePublic({
   void logView(prisma, ratePage.id, new Request("http://britch"));
 
   // 5. Creator profile info
-  const profile    = ratePage.creatorAccount.profile;
+  const profile    = ratePage.account.profile;
   const handles    = rates.handles ?? {};
   const bio        = rates.bio ?? profile?.bio ?? null;
   const r2BaseUrl  = env.R2_PUBLIC_URL ?? "";
@@ -223,7 +223,7 @@ export default async function RatePagePublic({
               color: "var(--paper)",
             }}
           >
-            {profile?.displayName ?? ratePage.creatorAccount.id}
+            {profile?.displayName ?? ratePage.account.id}
           </h1>
 
           {/* Social handles */}
