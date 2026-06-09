@@ -63,12 +63,12 @@ function parseFrozenRates(json: unknown): FrozenRates | null {
   return json as FrozenRates;
 }
 
-async function logView(prisma: ReturnType<typeof getPrisma>, ratePageId: string, req: Request) {
+async function logView(prisma: ReturnType<typeof getPrisma>, ratePageId: string, accountId: string, req: Request) {
   try {
     const ip  = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for") ?? null;
     const ua  = req.headers.get("user-agent") ?? null;
     const ref = req.headers.get("referer") ?? null;
-    await prisma.ratePageView.create({ data: { ratePageId, ip: ip, userAgent: ua, referrer: ref } });
+    await prisma.ratePageView.create({ data: { ratePageId, accountId, ip, userAgent: ua, referrer: ref } });
   } catch {
     // Non-critical — never block render
   }
@@ -122,7 +122,7 @@ export default async function RatePagePublic({
   }
 
   // 4. Log view (fire-and-forget)
-  void logView(prisma, ratePage.id, new Request("http://britch"));
+  void logView(prisma, ratePage.id, ratePage.accountId, new Request("http://britch"));
 
   // 5. Creator profile info
   const profile    = ratePage.account.profile;

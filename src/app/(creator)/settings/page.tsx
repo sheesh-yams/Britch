@@ -25,7 +25,7 @@ export default async function SettingsPage() {
       {account?.profile && (
         <Section title="CREATOR PROFILE">
           <FieldRow label="Display name"   value={account.profile.displayName ?? "—"} />
-          <FieldRow label="Niche"          value={account.profile.niche        ?? "—"} />
+          <FieldRow label="Niches"         value={(account.profile.niches as string[] | null)?.join(", ") || "—"} />
           {account.profile.bio && <FieldRow label="Bio" value={account.profile.bio} />}
         </Section>
       )}
