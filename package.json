@@ -43,5 +43,8 @@
     "typescript": "^5",
     "vitest": "^3.2.6",
     "wrangler": "^4.98.0"
+  },
+  "overrides": {
+    "kysely": "0.28.17"
   }
 }
