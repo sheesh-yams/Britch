@@ -19,6 +19,7 @@ import { z }                   from "zod";
 import { getSession }          from "@/lib/auth";
 import { getDb }               from "@/lib/db";
 import { creatorAccount, creatorProfile, socialAccount } from "@/db/schema";
+import { computeAndStoreDeliverables, type Platform } from "@/lib/rates";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ const OnboardingSchema = z.object({
   handles:     z.record(z.string(), z.string()).default({}),
   followers:   z.record(z.string(), z.string()).default({}),
   engagement:  z.record(z.string(), z.string()).default({}),
+  avgViews:    z.record(z.string(), z.string()).default({}),
 });
 
 export async function POST(req: Request) {
@@ -87,7 +89,8 @@ export async function POST(req: Request) {
     });
   }
 
-  // 3. Upsert one SocialAccount per selected platform.
+  // 3. Upsert one SocialAccount per selected platform, then compute rates.
+  let deliverableCount = 0;
   for (const platform of payload.platforms) {
     const rawHandle = (payload.handles[platform] ?? "").trim();
     if (!rawHandle) continue;
@@ -98,6 +101,11 @@ export async function POST(req: Request) {
       0,
       Math.round((parseFloat(payload.engagement[platform] ?? "0") || 0) * 100),
     );
+    // avgViews: creator-entered "average organic views" — drives the rate engine.
+    // If they leave it blank, synthesize a sensible default: ~30% of followers
+    // (a typical organic reach ratio). Real PostSample replaces this later.
+    const enteredAvgViews = Math.max(0, parseInt(payload.avgViews[platform] ?? "0", 10) || 0);
+    const avgViews = enteredAvgViews > 0 ? enteredAvgViews : Math.round(followers * 0.3);
 
     await db.insert(socialAccount)
       .values({
@@ -106,14 +114,30 @@ export async function POST(req: Request) {
         handle,
         followers,
         engagementRateBps,
-        avgViews: 0,
+        avgViews,
         source: "SELF_REPORTED",
       })
       .onConflictDoUpdate({
         target: [socialAccount.accountId, socialAccount.platform],
-        set: { handle, followers, engagementRateBps, disconnectedAt: null },
+        set: { handle, followers, engagementRateBps, avgViews, disconnectedAt: null },
       });
+
+    // 4. Compute initial Deliverables for this platform. Best-effort: if the
+    //    global pricing plane isn't seeded, we return ok:true anyway with
+    //    deliverableCount=0 and the dashboard surfaces "no rates yet" cleanly.
+    try {
+      const { created } = await computeAndStoreDeliverables(db, ca.id, {
+        platform: platform as Platform,
+        followers,
+        engagementRateBps,
+        avgViews,
+      });
+      deliverableCount += created;
+    } catch {
+      // Don't fail onboarding because the rate engine had a hiccup — the
+      // creator's identity is saved either way. They can recompute from /rates.
+    }
   }
 
-  return Response.json({ ok: true, accountId: ca.id });
+  return Response.json({ ok: true, accountId: ca.id, deliverables: deliverableCount });
 }

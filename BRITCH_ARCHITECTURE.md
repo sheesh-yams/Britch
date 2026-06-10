@@ -199,7 +199,7 @@ Starting calibration from published 2026 benchmarks. **These are guesses to be t
 - `roundingCents 5000` (round to nearest $50)
 - `floorSpreadBps 2000` (floor = 20% below target), `stretchSpreadBps 2000` (stretch = 20% above)
 
-**Seed creator (powers the demo):** "Sarah Creates" — niches Lifestyle/Travel/Fashion — TikTok @sarah_creates 500K / 4.5%, Instagram @sarah.creates 245K / 3.8% — audience + last-20 post sample stored on the seed record so the engine computes real numbers end-to-end.
+**Seed creator (powers the demo):** "Creator Name" — niches Lifestyle/Travel/Fashion — TikTok `@creator_demo` 500K / 4.5%, Instagram `@creator.demo` 245K / 3.8% — audience + last-20 post sample stored on the seed record so the engine computes real numbers end-to-end.
 
 ---
 

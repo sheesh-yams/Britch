@@ -102,7 +102,7 @@ Two seed files — run in order:
 # Global pricing plane (niches, CPM benchmarks, format multipliers, engine params, ProviderConfig)
 npx wrangler d1 execute britch-db --local --file=./prisma/seed.sql
 
-# Demo creator plane (Sarah Creates account + rate page at /r/demo-sarah)
+# Demo creator plane (Creator Name account + rate page at /r/demo-creator)
 npx wrangler d1 execute britch-db --local --file=./prisma/seed-demo.sql
 ```
 
@@ -123,7 +123,7 @@ npm run dev
 
 This runs Next.js dev server against local D1/KV/R2 via wrangler bindings.
 
-Test the demo rate page: [http://localhost:3000/r/demo-sarah](http://localhost:3000/r/demo-sarah)
+Test the demo rate page: [http://localhost:3000/r/demo-creator](http://localhost:3000/r/demo-creator)
 
 ---
 
@@ -170,7 +170,7 @@ npx tsx scripts/seed.ts
 | `/sign-in` | Sign in |
 | `/onboarding` | Creator setup wizard |
 | `/dashboard` | Creator home |
-| `/r/demo-sarah` | Public demo rate page (Sarah Creates) |
+| `/r/demo-creator` | Public demo rate page (Creator Name) |
 | `/admin` | Admin panel (ADMIN role required) |
 
 ---
@@ -186,5 +186,5 @@ This project uses `@prisma/adapter-d1` with `driverAdapters` preview. The migrat
 **Better Auth: "Missing secret"**
 Check `.dev.vars` exists and `BETTER_AUTH_SECRET` is set.
 
-**Empty rate page at `/r/demo-sarah`**
+**Empty rate page at `/r/demo-creator`**
 Run `seed.sql` first (global plane), then `seed-demo.sql` (creator plane). Order matters — FK references.

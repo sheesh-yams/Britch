@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { computeRate, DEFAULT_ENGINE_PARAMS, type EngineInput } from "./engine";
 
-// ── Sarah Creates seed data (from BRITCH_ARCHITECTURE.md + scripts/seed.ts) ──
+// ── Demo Creator seed data (from BRITCH_ARCHITECTURE.md + scripts/seed.ts) ──
 
-const SARAH_TT_ORGANIC = [
+const DEMO_TT_ORGANIC = [
   162000,148000,201000,137000,172000,
   // 143000 isPaid — excluded
   155000,168000,131000,189000,
@@ -12,7 +12,7 @@ const SARAH_TT_ORGANIC = [
   151000,143000,167000,158000,
 ];
 
-const SARAH_IG_ORGANIC = [
+const DEMO_IG_ORGANIC = [
   73000,68000,82000,64000,79000,
   // 71000 isPaid — excluded
   67000,76000,59000,88000,
@@ -26,7 +26,7 @@ const TT_BASE: EngineInput = {
   deliverableType: "VIDEO",
   followers: 500000,
   engagementRateBps: 450,          // 4.5%
-  organicPostViews: SARAH_TT_ORGANIC,
+  organicPostViews: DEMO_TT_ORGANIC,
   cpmCents: 1000,                  // $10 TikTok CPM
   formatMultiplierBps: 10000,      // 1.0× video
   ...DEFAULT_ENGINE_PARAMS,
@@ -37,7 +37,7 @@ const IG_REEL_BASE: EngineInput = {
   deliverableType: "REEL",
   followers: 245000,
   engagementRateBps: 380,          // 3.8%
-  organicPostViews: SARAH_IG_ORGANIC,
+  organicPostViews: DEMO_IG_ORGANIC,
   cpmCents: 1200,                  // $12 Instagram CPM
   formatMultiplierBps: 10000,      // 1.0× reel
   ...DEFAULT_ENGINE_PARAMS,
@@ -83,14 +83,14 @@ describe("computeRate — integer invariants", () => {
   });
 });
 
-describe("computeRate — Sarah Creates TikTok Video", () => {
+describe("computeRate — Demo Creator TikTok Video", () => {
   let r: ReturnType<typeof computeRate>;
   beforeAll(() => { r = computeRate(TT_BASE); });
 
   it("uses organic-only avgReach (excludes 2 paid posts)", () => {
     // 18 organic posts
-    const sum = SARAH_TT_ORGANIC.reduce((a, b) => a + b, 0);
-    const expected = Math.floor(sum / SARAH_TT_ORGANIC.length);
+    const sum = DEMO_TT_ORGANIC.reduce((a, b) => a + b, 0);
+    const expected = Math.floor(sum / DEMO_TT_ORGANIC.length);
     expect(r.breakdown.avgReach).toBe(expected);
   });
 
@@ -119,13 +119,13 @@ describe("computeRate — Sarah Creates TikTok Video", () => {
   });
 });
 
-describe("computeRate — Sarah Creates Instagram Reel", () => {
+describe("computeRate — Demo Creator Instagram Reel", () => {
   let r: ReturnType<typeof computeRate>;
   beforeAll(() => { r = computeRate(IG_REEL_BASE); });
 
   it("uses organic-only avgReach (excludes 2 paid posts)", () => {
-    const sum = SARAH_IG_ORGANIC.reduce((a, b) => a + b, 0);
-    const expected = Math.floor(sum / SARAH_IG_ORGANIC.length);
+    const sum = DEMO_IG_ORGANIC.reduce((a, b) => a + b, 0);
+    const expected = Math.floor(sum / DEMO_IG_ORGANIC.length);
     expect(r.breakdown.avgReach).toBe(expected);
   });
 

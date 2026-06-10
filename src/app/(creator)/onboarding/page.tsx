@@ -33,6 +33,7 @@ export default function OnboardingPage() {
   const [handles,     setHandles]     = useState<Record<string, string>>({});
   const [followers,   setFollowers]   = useState<Record<string, string>>({});
   const [engagement,  setEngagement]  = useState<Record<string, string>>({});
+  const [avgViews,    setAvgViews]    = useState<Record<string, string>>({});
 
   function togglePlatform(p: string) {
     setPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
@@ -45,7 +46,7 @@ export default function OnboardingPage() {
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName, niche, bio, platforms, handles, followers, engagement }),
+        body: JSON.stringify({ displayName, niche, bio, platforms, handles, followers, engagement, avgViews }),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!res.ok || !data.ok) {
@@ -74,7 +75,7 @@ export default function OnboardingPage() {
         {step === "identity" && (
           <Card title="Who are you?" sub="Tell brands how to find you.">
             <Field label="DISPLAY NAME" required>
-              <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} style={inputStyle} placeholder="Sarah Creates" />
+              <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} style={inputStyle} placeholder="Creator Name" />
             </Field>
             <Field label="NICHE">
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -139,6 +140,7 @@ export default function OnboardingPage() {
                   <input type="text" placeholder={`@handle`} value={handles[p] ?? ""} onChange={e => setHandles(h => ({ ...h, [p]: e.target.value }))} style={inputStyle} />
                   <input type="number" placeholder="Followers" value={followers[p] ?? ""} onChange={e => setFollowers(f => ({ ...f, [p]: e.target.value }))} style={inputStyle} min="0" />
                   <input type="number" placeholder="Engagement % (e.g. 4.5)" value={engagement[p] ?? ""} onChange={e => setEngagement(eg => ({ ...eg, [p]: e.target.value }))} style={inputStyle} step="0.1" min="0" max="100" />
+                  <input type="number" placeholder="Average organic views per post (optional — drives your rate)" value={avgViews[p] ?? ""} onChange={e => setAvgViews(v => ({ ...v, [p]: e.target.value }))} style={inputStyle} min="0" />
                 </div>
               </div>
             ))}

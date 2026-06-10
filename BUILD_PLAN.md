@@ -59,7 +59,7 @@ britch/
 │   │   ├── auth.ts                        # Better Auth config (KV sessions, D1 user store)
 │   │   ├── auth-client.ts                 # Better Auth browser client
 │   │   ├── engine.ts                      # Rate engine — pure function, integer math
-│   │   ├── engine.test.ts                 # Vitest unit tests (Sarah Creates assertions)
+│   │   ├── engine.test.ts                 # Vitest unit tests (Creator Name assertions)
 │   │   ├── r2.ts                          # R2 get/put/delete, thumbnail cache util
 │   │   ├── resend.ts                      # Resend HTTP email helper
 │   │   ├── tokens.ts                      # nanoid token generation
@@ -106,7 +106,7 @@ britch/
 │
 ├── scripts/
 │   └── seed.ts                            # Seed: niches, benchmarks, multipliers, EngineParams,
-│                                          #   ProviderConfig, Sarah Creates seed creator
+│                                          #   ProviderConfig, Creator Name seed creator
 │
 ├── public/
 │   └── fonts/                             # Self-hosted Clash Display + General Sans + Space Mono
@@ -240,7 +240,7 @@ britch/
 - [ ] **STEP 2a** — Spike: Better Auth on Workers/OpenNext (sign-up, protected route, KV session)
 - [ ] **STEP 2b** — Spike: @react-pdf/renderer in Workers runtime; write SPIKES.md
 - [ ] **STEP 3** — Prisma schema (both planes), D1 migration
-- [ ] **STEP 4** — Seed script (niches, benchmarks, multipliers, EngineParams, Sarah Creates)
+- [ ] **STEP 4** — Seed script (niches, benchmarks, multipliers, EngineParams, Creator Name)
 - [ ] **STEP 5** — Rate engine pure function + unit tests
 - [ ] **STEP 6** — Provider interfaces + SeededProvider + ManualProvider + OEmbed + R2 thumbnail cache
 - [ ] **STEP 7** — Route skeleton (all MVP routes), scoped DB wrapper, admin guard, real data at /r/[token]

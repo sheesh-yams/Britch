@@ -18,7 +18,7 @@
 - [x] Prisma schema — 26 models, both data planes, zero Decimal/Float, all money = Int cents
 - [x] D1 migration SQL (`prisma/migrations/0001_initial/migration.sql`) — 31 tables + indexes
 - [x] Global seed SQL (`prisma/seed.sql`) — niches, CPM benchmarks, format multipliers, EngineParams, ProviderConfig
-- [x] Demo seed SQL (`prisma/seed-demo.sql`) — Sarah Creates user, account, deliverables, RatePage at `/r/demo-sarah`
+- [x] Demo seed SQL (`prisma/seed-demo.sql`) — Creator Name user, account, deliverables, RatePage at `/r/demo-creator`
 - [x] `getScopedDb()` — Prisma `$extends()` row-level security wrapper (accountId injected on all scoped models)
 - [x] `getPrisma()` — global plane client (admin-only writes)
 
@@ -34,7 +34,7 @@
 
 ### Rate Engine
 - [x] `computeRate()` — pure function, integer math only, no side effects
-- [x] 25 unit tests (all passing) — Sarah Creates TikTok + Instagram assertions, edge cases, determinism
+- [x] 25 unit tests (all passing) — Creator Name TikTok + Instagram assertions, edge cases, determinism
 - [x] `DEFAULT_ENGINE_PARAMS` constant matching architecture seed values
 
 ### Analytics Provider Layer

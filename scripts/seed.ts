@@ -10,7 +10,7 @@
  *   3. Format multipliers per platform × type
  *   4. EngineParams defaults (singleton)
  *   5. ProviderConfig (active = SEEDED)
- *   6. "Sarah Creates" seed creator — TikTok + Instagram
+ *   6. "Creator Name" seed creator — TikTok + Instagram
  *
  * Run:
  *   npx wrangler d1 execute britch-db --local --file=./prisma/seed.sql
@@ -108,14 +108,14 @@ const ENGINE_PARAMS = {
   stretchSpreadBps:       2000,   // stretch = 20% above target
 };
 
-// ─── Sarah Creates seed creator ──────────────────────────────────────────────
+// ─── Creator Name seed creator ──────────────────────────────────────────────
 // Exactly as specified in BRITCH_ARCHITECTURE.md
-// TikTok: @sarah_creates — 500K followers, 4.5% engagement, ~150K avg reach
-// Instagram: @sarah.creates — 245K followers, 3.8% engagement, ~70K avg reach
+// TikTok: @creator_demo — 500K followers, 4.5% engagement, ~150K avg reach
+// Instagram: @creator.demo — 245K followers, 3.8% engagement, ~70K avg reach
 
-const SARAH_TIKTOK_SNAPSHOT = {
+const DEMO_TIKTOK_SNAPSHOT = {
   platform: "TIKTOK",
-  handle: "@sarah_creates",
+  handle: "@creator_demo",
   followers: 500000,
   engagementRateBps: 450,        // 4.5%
   avgViews: 150000,
@@ -134,7 +134,7 @@ const SARAH_TIKTOK_SNAPSHOT = {
 
 // Last-20 TikTok posts — mix of organic and paid, views in line with 150K avg reach
 // Organic posts feed avgReach calculation; paid posts excluded from reach avg
-const SARAH_TIKTOK_POST_SAMPLE = [
+const DEMO_TIKTOK_POST_SAMPLE = [
   { views: 162000, isPaid: false },
   { views: 148000, isPaid: false },
   { views: 201000, isPaid: false },
@@ -158,9 +158,9 @@ const SARAH_TIKTOK_POST_SAMPLE = [
 ];
 // Organic-only mean ≈ 156K — rounds to 150K after engine rounding
 
-const SARAH_IG_SNAPSHOT = {
+const DEMO_IG_SNAPSHOT = {
   platform: "INSTAGRAM",
-  handle: "@sarah.creates",
+  handle: "@creator.demo",
   followers: 245000,
   engagementRateBps: 380,        // 3.8%
   avgViews: 70000,
@@ -177,7 +177,7 @@ const SARAH_IG_SNAPSHOT = {
   source: "SEEDED",
 };
 
-const SARAH_IG_POST_SAMPLE = [
+const DEMO_IG_POST_SAMPLE = [
   { views: 73000, isPaid: false },
   { views: 68000, isPaid: false },
   { views: 82000, isPaid: false },
@@ -260,14 +260,14 @@ export function generateSeedSQL(): string {
     `INSERT INTO "ProviderConfig" ("id","activeAnalyticsProvider","oembedTokens","updatedAt") VALUES ('provider_config_1','SEEDED','{}',${sq(ts)});`
   );
 
-  lines.push("", "-- 6. Sarah Creates — TikTok");
+  lines.push("", "-- 6. Creator Name — TikTok");
   lines.push(
-    `INSERT INTO "SeedCreator" ("id","handle","platform","displayName","snapshot","postSample","isActive","createdAt","updatedAt") VALUES ('seed_sarah_tiktok','@sarah_creates','TIKTOK','Sarah Creates',${sq(JSON.stringify(SARAH_TIKTOK_SNAPSHOT))},${sq(JSON.stringify(SARAH_TIKTOK_POST_SAMPLE))},1,${sq(ts)},${sq(ts)});`
+    `INSERT INTO "SeedCreator" ("id","handle","platform","displayName","snapshot","postSample","isActive","createdAt","updatedAt") VALUES ('seed_creator_tiktok','@creator_demo','TIKTOK','Creator Name',${sq(JSON.stringify(DEMO_TIKTOK_SNAPSHOT))},${sq(JSON.stringify(DEMO_TIKTOK_POST_SAMPLE))},1,${sq(ts)},${sq(ts)});`
   );
 
-  lines.push("", "-- 6. Sarah Creates — Instagram");
+  lines.push("", "-- 6. Creator Name — Instagram");
   lines.push(
-    `INSERT INTO "SeedCreator" ("id","handle","platform","displayName","snapshot","postSample","isActive","createdAt","updatedAt") VALUES ('seed_sarah_instagram','@sarah.creates','INSTAGRAM','Sarah Creates',${sq(JSON.stringify(SARAH_IG_SNAPSHOT))},${sq(JSON.stringify(SARAH_IG_POST_SAMPLE))},1,${sq(ts)},${sq(ts)});`
+    `INSERT INTO "SeedCreator" ("id","handle","platform","displayName","snapshot","postSample","isActive","createdAt","updatedAt") VALUES ('seed_creator_instagram','@creator.demo','INSTAGRAM','Creator Name',${sq(JSON.stringify(DEMO_IG_SNAPSHOT))},${sq(JSON.stringify(DEMO_IG_POST_SAMPLE))},1,${sq(ts)},${sq(ts)});`
   );
 
   lines.push("");
@@ -290,7 +290,7 @@ if (require.main === module || import.meta.url === `file://${process.argv[1]}`) 
   console.log(`  Format multipliers:${FORMAT_MULTIPLIERS.length}`);
   console.log(`  EngineParams:      1 (singleton)`);
   console.log(`  ProviderConfig:    1 (active = SEEDED)`);
-  console.log(`  SeedCreators:      2 (Sarah Creates — TikTok + Instagram)`);
+  console.log(`  SeedCreators:      2 (Creator Name — TikTok + Instagram)`);
   console.log(`\nApply locally:`);
   console.log(`  npx wrangler d1 migrations apply britch-db --local`);
   console.log(`  npx wrangler d1 execute britch-db --local --file=./prisma/seed.sql`);

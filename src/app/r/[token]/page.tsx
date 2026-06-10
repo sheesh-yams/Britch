@@ -9,7 +9,7 @@
  *   3. If PUBLISHED: render frozenRates snapshot — data never changes after publish
  *   4. Log a RatePageView (fire-and-forget; never blocks render)
  *
- * For the seeded Sarah Creates demo, visit /r/demo-sarah after running seed-demo.sql.
+ * For the seeded demo Creator, visit /r/demo-creator after running the seed.
  */
 
 import { notFound }            from "next/navigation";
