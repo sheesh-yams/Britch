@@ -7,7 +7,18 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { signUp } from "@/lib/auth-client";
+import { TURNSTILE_SITEKEY, TURNSTILE_ACTION, verifyTurnstileToken } from "@/lib/turnstile";
 import BrandMark from "@/components/britch/BrandMark";
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (el: string | HTMLElement, opts: Record<string, unknown>) => string;
+      getResponse: (id: string) => string | null;
+      reset: (id: string) => void;
+    };
+  }
+}
 
 export default function SignUpPage() {
   const [name,     setName]     = useState("");
@@ -19,9 +30,11 @@ export default function SignUpPage() {
 
   const initTurnstile = (el: HTMLDivElement | null) => {
     if (!el || widgetId.current) return;
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    if (!siteKey || typeof window === "undefined" || !window.turnstile) return;
-    widgetId.current = window.turnstile.render(el, { sitekey: siteKey });
+    if (typeof window === "undefined" || !window.turnstile) return;
+    widgetId.current = window.turnstile.render(el, {
+      sitekey: TURNSTILE_SITEKEY,
+      action:  TURNSTILE_ACTION,
+    });
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -33,6 +46,17 @@ export default function SignUpPage() {
     setError(null);
     setLoading(true);
 
+    // Gate: verify Turnstile token via siteverify Worker before any auth call.
+    // The Worker holds the secret. Existing signUp.email() logic below is unchanged.
+    const token = widgetId.current ? window.turnstile?.getResponse(widgetId.current) : null;
+    const verified = await verifyTurnstileToken(token);
+    if (!verified) {
+      setError("Please complete the verification challenge.");
+      if (widgetId.current) window.turnstile?.reset(widgetId.current);
+      setLoading(false);
+      return;
+    }
+
     try {
       const result = await signUp.email({
         name,
@@ -42,11 +66,11 @@ export default function SignUpPage() {
       });
       if (result?.error) {
         setError(result.error.message ?? "Sign up failed.");
-        window.turnstile?.reset(widgetId.current!);
+        if (widgetId.current) window.turnstile?.reset(widgetId.current);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error.");
-      window.turnstile?.reset(widgetId.current!);
+      if (widgetId.current) window.turnstile?.reset(widgetId.current);
     } finally {
       setLoading(false);
     }

@@ -21,11 +21,15 @@ binding = "R2"
 bucket_name = "britch-assets"
 
 [vars]
-NEXT_PUBLIC_TURNSTILE_SITE_KEY = "REPLACE_WITH_TURNSTILE_SITE_KEY"
 BETTER_AUTH_URL = "https://britch.ashish-yamdagni.workers.dev"
 NEXT_PUBLIC_APP_URL = "https://britch.ashish-yamdagni.workers.dev"
 R2_PUBLIC_URL = ""  # Set to your R2 public bucket URL after deploy (e.g. https://pub-xxx.r2.dev)
-# BETTER_AUTH_SECRET + TURNSTILE_SECRET_KEY are set via `wrangler secret put` — never commit secrets to [vars]
+# BETTER_AUTH_SECRET is set via `wrangler secret put` on the britch Worker.
+# Turnstile sitekey is hardcoded in src/lib/turnstile.ts (it's public anyway, and
+# NEXT_PUBLIC_* env vars are baked at Next.js build time — vars under [vars] here
+# aren't visible to the build, only to the runtime Worker).
+# TURNSTILE_SECRET_KEY lives on the separate siteverify Worker (turnstile-siteverify-britch),
+# not here. The browser never talks to it directly.
 
 # Local dev overrides
 [dev]

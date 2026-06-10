@@ -7,6 +7,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
+import { TURNSTILE_SITEKEY, TURNSTILE_ACTION, verifyTurnstileToken } from "@/lib/turnstile";
 import BrandMark from "@/components/britch/BrandMark";
 
 declare global {
@@ -27,12 +28,13 @@ export default function SignInPage() {
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetId     = useRef<string | null>(null);
 
-  // Render Turnstile widget on mount
   const initTurnstile = (el: HTMLDivElement | null) => {
     if (!el || widgetId.current) return;
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    if (!siteKey || typeof window === "undefined" || !window.turnstile) return;
-    widgetId.current = window.turnstile.render(el, { sitekey: siteKey });
+    if (typeof window === "undefined" || !window.turnstile) return;
+    widgetId.current = window.turnstile.render(el, {
+      sitekey: TURNSTILE_SITEKEY,
+      action:  TURNSTILE_ACTION,
+    });
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -40,19 +42,26 @@ export default function SignInPage() {
     setError(null);
     setLoading(true);
 
-    const token = widgetId.current
-      ? window.turnstile?.getResponse(widgetId.current)
-      : null;
+    // Gate: verify Turnstile token via siteverify Worker before any auth call.
+    // The Worker holds the secret. Existing signIn.email() logic below is unchanged.
+    const token = widgetId.current ? window.turnstile?.getResponse(widgetId.current) : null;
+    const verified = await verifyTurnstileToken(token);
+    if (!verified) {
+      setError("Please complete the verification challenge.");
+      if (widgetId.current) window.turnstile?.reset(widgetId.current);
+      setLoading(false);
+      return;
+    }
 
     try {
       const result = await signIn.email({ email, password, callbackURL: "/dashboard" });
       if (result?.error) {
         setError(result.error.message ?? "Sign in failed.");
-        window.turnstile?.reset(widgetId.current!);
+        if (widgetId.current) window.turnstile?.reset(widgetId.current);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error.");
-      window.turnstile?.reset(widgetId.current!);
+      if (widgetId.current) window.turnstile?.reset(widgetId.current);
     } finally {
       setLoading(false);
     }
