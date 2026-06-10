@@ -18,6 +18,7 @@ import type { DB } from "@/lib/db";
 import {
   deliverable, engineParams as engineParamsTable,
   cpmBenchmark, formatMultiplier as formatMultiplierTable,
+  postSample, socialAccount,
 } from "@/db/schema";
 
 export type Platform = "INSTAGRAM" | "TIKTOK";
@@ -47,6 +48,13 @@ export interface SocialInput {
   followers:         number;
   engagementRateBps: number;
   avgViews:          number;
+  /**
+   * Optional: organic post views to use as the engine's reach sample. When
+   * provided, this is the single source of truth — `avgViews` is ignored as a
+   * fallback. When omitted, computeAndStoreDeliverables() looks up PostSample
+   * rows for this account/platform and uses the organic subset.
+   */
+  organicPostViews?: number[];
 }
 
 /**
@@ -56,8 +64,10 @@ export interface SocialInput {
  *   early instead of crashing — onboarding still succeeds, rates just aren't
  *   computed yet.
  * - One Deliverable row per default format for the platform.
- * - When the creator has no real PostSample, synthesizes a single-entry
- *   sample from avgViews so the engine still produces a non-zero rate.
+ * - Reach comes from real post-view data: caller's organicPostViews array
+ *   first, then PostSample rows in the DB. We do NOT fall back to followers —
+ *   that would conflate audience size with reach and reintroduce the very
+ *   thing Britch prices against.
  */
 export async function computeAndStoreDeliverables(
   db: DB,
@@ -88,12 +98,24 @@ export async function computeAndStoreDeliverables(
   }
   const cpmCents = cpmRow?.cpmCents ?? 1000;
 
-  // No real PostSample on file → synthesize from avgViews. With organicPostViews
-  // empty the engine returns 0, which would mask a working integration as broken.
-  const organicPostViews =
-    social.avgViews > 0
-      ? [social.avgViews, social.avgViews, social.avgViews] // tiny array; mean unchanged
-      : [];
+  // Build organicPostViews. Priority:
+  //   1) Caller-supplied array (e.g. just-entered onboarding sample).
+  //   2) PostSample rows on this socialAccount, filtered to organic.
+  //   3) [] — produces $0 rates so the creator sees they owe us view data.
+  let organicPostViews: number[] = social.organicPostViews ?? [];
+  if (organicPostViews.length === 0) {
+    const sa = await db.query.socialAccount.findFirst({
+      where: and(eq(socialAccount.accountId, accountId), eq(socialAccount.platform, social.platform)),
+      columns: { id: true },
+    });
+    if (sa) {
+      const samples = await db.query.postSample.findMany({
+        where: and(eq(postSample.socialAccountId, sa.id), eq(postSample.isPaid, false)),
+        columns: { views: true },
+      });
+      organicPostViews = samples.map(s => s.views);
+    }
+  }
 
   let created = 0;
   for (const format of DEFAULT_FORMATS[social.platform]) {

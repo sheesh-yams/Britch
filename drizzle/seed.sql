@@ -51,8 +51,13 @@ INSERT OR REPLACE INTO engineParams
    engAdjMinBps, engAdjMaxBps, roundingCents, floorSpreadBps, stretchSpreadBps,
    createdAt, updatedAt)
 VALUES
-  ('engine_params_v1', 1, 1, 'v1 — launch defaults',
-   8500, 1500, 300,
+  ('engine_params_v1', 2, 1, 'v2 — pure reach pricing',
+   -- reachWeightBps=10000 means 100% of the rate comes from average video
+   -- reach. Followers contribute 0 to the rate. Britch's thesis baked into
+   -- the engine: you are priced on what you actually deliver (views), not
+   -- on a vanity number (followers). The follower count still informs the
+   -- CPM tier lookup (NANO/MICRO/MID/MACRO).
+   10000, 0, 300,
    7000, 13000, 5000, 2000, 2000,
    1781050000000, 1781050000000);
 

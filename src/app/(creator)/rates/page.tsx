@@ -80,6 +80,8 @@ export default async function RatesPage() {
               </form>
             ))}
 
+            <TotalsRow deliverables={deliverables} />
+
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
               <form action={publishRatePage}>
                 <button type="submit" style={primaryButtonStyle}>
@@ -122,6 +124,66 @@ export default async function RatesPage() {
           </div>
         )}
       </Section>
+    </div>
+  );
+}
+
+function TotalsRow({
+  deliverables,
+}: {
+  deliverables: { platform: string; floorCents: number; finalRateCents: number; stretchCents: number }[];
+}) {
+  if (deliverables.length === 0) return null;
+  const totals = deliverables.reduce(
+    (acc, d) => ({
+      floor:   acc.floor   + d.floorCents,
+      final:   acc.final   + d.finalRateCents,
+      stretch: acc.stretch + d.stretchCents,
+    }),
+    { floor: 0, final: 0, stretch: 0 },
+  );
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "minmax(140px, 1fr) repeat(3, 130px) 90px",
+        gap: 12,
+        alignItems: "center",
+        padding: "14px 16px",
+        background: "var(--ink-3)",
+        borderRadius: "var(--r)",
+        marginTop: 6,
+      }}
+    >
+      <div style={{ fontFamily: "var(--font-clash-display)", fontSize: 14, color: "var(--paper)", fontWeight: 700, letterSpacing: "0.04em" }}>
+        FULL BUNDLE
+        <span style={{ marginLeft: 8, fontFamily: "var(--font-space-mono)", fontSize: 10, opacity: 0.45, fontWeight: 400 }}>
+          (sum of all deliverables)
+        </span>
+      </div>
+      <TotalCell label="FLOOR"   cents={totals.floor} />
+      <TotalCell label="TARGET"  cents={totals.final} highlight />
+      <TotalCell label="STRETCH" cents={totals.stretch} />
+      <span />
+    </div>
+  );
+}
+
+function TotalCell({ label, cents, highlight }: { label: string; cents: number; highlight?: boolean }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <span style={{ fontFamily: "var(--font-space-mono)", fontSize: 9, color: "var(--paper)", opacity: 0.45, letterSpacing: "0.08em" }}>
+        {label}
+      </span>
+      <span style={{
+        fontFamily: "var(--font-clash-display)",
+        fontSize: 16,
+        color: highlight ? "var(--volt)" : "var(--paper)",
+        fontWeight: highlight ? 700 : 600,
+      }}>
+        {formatCents(cents)}
+      </span>
     </div>
   );
 }

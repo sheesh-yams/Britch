@@ -33,7 +33,7 @@ export default function OnboardingPage() {
   const [handles,     setHandles]     = useState<Record<string, string>>({});
   const [followers,   setFollowers]   = useState<Record<string, string>>({});
   const [engagement,  setEngagement]  = useState<Record<string, string>>({});
-  const [avgViews,    setAvgViews]    = useState<Record<string, string>>({});
+  const [videoViews,  setVideoViews]  = useState<Record<string, string>>({});
 
   function togglePlatform(p: string) {
     setPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
@@ -46,7 +46,7 @@ export default function OnboardingPage() {
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName, niche, bio, platforms, handles, followers, engagement, avgViews }),
+        body: JSON.stringify({ displayName, niche, bio, platforms, handles, followers, engagement, videoViews }),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!res.ok || !data.ok) {
@@ -139,8 +139,22 @@ export default function OnboardingPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <input type="text" placeholder={`@handle`} value={handles[p] ?? ""} onChange={e => setHandles(h => ({ ...h, [p]: e.target.value }))} style={inputStyle} />
                   <input type="number" placeholder="Followers" value={followers[p] ?? ""} onChange={e => setFollowers(f => ({ ...f, [p]: e.target.value }))} style={inputStyle} min="0" />
-                  <input type="number" placeholder="Engagement % (e.g. 4.5)" value={engagement[p] ?? ""} onChange={e => setEngagement(eg => ({ ...eg, [p]: e.target.value }))} style={inputStyle} step="0.1" min="0" max="100" />
-                  <input type="number" placeholder="Average organic views per post (optional — drives your rate)" value={avgViews[p] ?? ""} onChange={e => setAvgViews(v => ({ ...v, [p]: e.target.value }))} style={inputStyle} min="0" />
+                  <input type="number" placeholder="Engagement % (e.g. 4.5) — quality multiplier on your rate" value={engagement[p] ?? ""} onChange={e => setEngagement(eg => ({ ...eg, [p]: e.target.value }))} style={inputStyle} step="0.1" min="0" max="100" />
+                  <div>
+                    <span style={{ fontFamily: "var(--font-space-mono)", fontSize: 11, color: "var(--paper)", opacity: 0.5, letterSpacing: "0.07em" }}>
+                      LAST 20 VIDEO VIEWS
+                    </span>
+                    <p style={{ fontFamily: "var(--font-general-sans)", fontSize: 12, color: "var(--paper)", opacity: 0.4, margin: "2px 0 6px" }}>
+                      Paste one view count per line (or comma-separated). Paid posts can be skipped. We average these — this is your reach, the number that actually drives your rate.
+                    </p>
+                    <textarea
+                      value={videoViews[p] ?? ""}
+                      onChange={e => setVideoViews(v => ({ ...v, [p]: e.target.value }))}
+                      rows={6}
+                      placeholder={`12500\n8700\n15200\n10300\n…`}
+                      style={{ ...inputStyle, fontFamily: "var(--font-space-mono)", resize: "vertical" }}
+                    />
+                  </div>
                 </div>
               </div>
             ))}
