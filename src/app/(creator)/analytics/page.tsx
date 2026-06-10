@@ -1,7 +1,10 @@
 import { headers }           from "next/headers";
+import { redirect }          from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { and, eq, isNull }   from "drizzle-orm";
 import { getSession }        from "@/lib/auth";
 import { getScopedDb }       from "@/lib/db";
+import { socialAccount }     from "@/db/schema";
 import { formatBps }         from "@/lib/money";
 import AudiencePanel         from "@/components/britch/AudiencePanel";
 
@@ -10,8 +13,13 @@ export default async function AnalyticsPage() {
   const session = await getSession(env.DB, await headers());
   if (!session) return null;
 
-  const db      = getScopedDb(env.DB, session.user.id);
-  const socials = await db.socialAccount.findMany({ where: { disconnectedAt: null } });
+  const scoped = await getScopedDb(env.DB, session.user.id);
+  if (!scoped) redirect("/onboarding");
+  const { db, accountId } = scoped;
+
+  const socials = await db.query.socialAccount.findMany({
+    where: and(eq(socialAccount.accountId, accountId), isNull(socialAccount.disconnectedAt)),
+  });
 
   return (
     <div style={{ padding: "40px 32px", maxWidth: 900 }}>

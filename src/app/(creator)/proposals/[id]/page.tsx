@@ -1,8 +1,10 @@
 import { headers }           from "next/headers";
+import { notFound, redirect } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { and, eq }           from "drizzle-orm";
 import { getSession }        from "@/lib/auth";
 import { getScopedDb }       from "@/lib/db";
-import { notFound }          from "next/navigation";
+import { proposal }          from "@/db/schema";
 import { formatCents }       from "@/lib/money";
 import ProposalStatus        from "@/components/britch/ProposalStatus";
 import Link                  from "next/link";
@@ -13,18 +15,21 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
   const session = await getSession(env.DB, await headers());
   if (!session) return null;
 
-  const db       = getScopedDb(env.DB, session.user.id);
-  const proposal = await db.proposal.findUnique({
-    where: { id },
-    include: {
-      brand:         true,
-      workItems:     true,
+  const scoped = await getScopedDb(env.DB, session.user.id);
+  if (!scoped) redirect("/onboarding");
+  const { db, accountId } = scoped;
+
+  const p = await db.query.proposal.findFirst({
+    where: and(eq(proposal.id, id), eq(proposal.accountId, accountId)),
+    with: {
+      brand:     true,
+      workItems: true,
     },
   });
 
-  if (!proposal) notFound();
+  if (!p) notFound();
 
-  const lineItems = proposal.lineItems as { id: string; label: string; priceCents: number; qty: number }[] | null ?? [];
+  const lineItems = p.lineItems as { id?: string; label: string; priceCents: number; qty: number }[] | null ?? [];
   const totalCents = lineItems.reduce((s, l) => s + l.priceCents * l.qty, 0);
 
   return (
@@ -37,14 +42,14 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
 
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 32 }}>
         <h1 style={{ fontFamily: "var(--font-clash-display)", fontSize: 36, color: "var(--paper)", margin: 0 }}>
-          {proposal.title ?? "Untitled proposal"}
+          {p.title ?? "Untitled proposal"}
         </h1>
-        <ProposalStatus status={proposal.status} />
+        <ProposalStatus status={p.status} />
       </div>
 
-      {proposal.brand && (
+      {p.brand && (
         <div style={{ marginBottom: 20, fontFamily: "var(--font-general-sans)", fontSize: 14, color: "var(--paper)", opacity: 0.55 }}>
-          For <strong style={{ color: "var(--paper)", opacity: 1 }}>{proposal.brand.name}</strong>
+          For <strong style={{ color: "var(--paper)", opacity: 1 }}>{p.brand.name}</strong>
         </div>
       )}
 
@@ -68,25 +73,25 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
         </div>
       )}
 
-      {proposal.notes && (
+      {p.notes && (
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontFamily: "var(--font-space-mono)", fontSize: 10, color: "var(--paper)", opacity: 0.4, letterSpacing: "0.1em", marginBottom: 10 }}>
             MESSAGE
           </div>
           <p style={{ fontFamily: "var(--font-general-sans)", fontSize: 15, color: "var(--paper)", opacity: 0.7, lineHeight: 1.6, margin: 0 }}>
-            {proposal.notes}
+            {p.notes}
           </p>
         </div>
       )}
 
-      {proposal.token && (
+      {p.token && (
         <div>
           <Link
-            href={`/p/${proposal.token}`}
+            href={`/p/${p.token}`}
             target="_blank"
             style={{ fontFamily: "var(--font-space-mono)", fontSize: 12, color: "var(--volt)", textDecoration: "none" }}
           >
-            View public proposal /p/{proposal.token} →
+            View public proposal /p/{p.token} →
           </Link>
         </div>
       )}

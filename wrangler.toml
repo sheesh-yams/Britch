@@ -9,9 +9,8 @@ assets = { directory = ".open-next/assets" }
 [[d1_databases]]
 binding = "DB"
 database_name = "britch-db"
-database_id = "354c439f-487e-4bec-a725-26b4533a93aa"
-migrations_dir = "prisma/migrations"
-migrations_pattern = "prisma/migrations/*/migration.sql"
+database_id = "198a69b6-b549-4788-8cca-cb408f9344be"
+migrations_dir = "drizzle"
 
 [[kv_namespaces]]
 binding = "KV"

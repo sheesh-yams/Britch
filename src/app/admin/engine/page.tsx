@@ -1,11 +1,13 @@
-import { getPrisma }         from "@/lib/db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { eq } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { engineParams } from "@/db/schema";
 import { formatBps, formatCents, formatMultiplier } from "@/lib/money";
 
 export default async function EnginePage() {
   const { env } = getCloudflareContext();
-  const prisma  = getPrisma(env.DB);
-  const ep      = await prisma.engineParams.findFirst({ where: { isActive: true } });
+  const db = getDb(env.DB);
+  const ep = await db.query.engineParams.findFirst({ where: eq(engineParams.isActive, true) });
 
   if (!ep) {
     return (

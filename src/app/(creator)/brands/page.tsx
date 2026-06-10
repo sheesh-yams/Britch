@@ -1,15 +1,24 @@
 import { headers }           from "next/headers";
+import { redirect }          from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { eq, desc }          from "drizzle-orm";
 import { getSession }        from "@/lib/auth";
 import { getScopedDb }       from "@/lib/db";
+import { brand }             from "@/db/schema";
 
 export default async function BrandsPage() {
   const { env } = getCloudflareContext();
   const session = await getSession(env.DB, await headers());
   if (!session) return null;
 
-  const db     = getScopedDb(env.DB, session.user.id);
-  const brands = await db.brand.findMany({ orderBy: { createdAt: "desc" } });
+  const scoped = await getScopedDb(env.DB, session.user.id);
+  if (!scoped) redirect("/onboarding");
+  const { db, accountId } = scoped;
+
+  const brands = await db.query.brand.findMany({
+    where: eq(brand.accountId, accountId),
+    orderBy: desc(brand.createdAt),
+  });
 
   return (
     <div style={{ padding: "40px 32px", maxWidth: 800 }}>
@@ -24,14 +33,7 @@ export default async function BrandsPage() {
           {brands.map(b => (
             <div
               key={b.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "14px 18px",
-                background: "var(--ink-2)",
-                borderRadius: "var(--r)",
-              }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "var(--ink-2)", borderRadius: "var(--r)" }}
             >
               <div>
                 <div style={{ fontFamily: "var(--font-general-sans)", fontSize: 15, color: "var(--paper)", fontWeight: 500 }}>

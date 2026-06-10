@@ -1,10 +1,12 @@
-import { getPrisma }         from "@/lib/db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { desc } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { seedCreator } from "@/db/schema";
 
 export default async function AdminSeedCreatorsPage() {
-  const { env }  = getCloudflareContext();
-  const prisma   = getPrisma(env.DB);
-  const creators = await prisma.seedCreator.findMany({ orderBy: { createdAt: "desc" } });
+  const { env } = getCloudflareContext();
+  const db = getDb(env.DB);
+  const creators = await db.query.seedCreator.findMany({ orderBy: desc(seedCreator.createdAt) });
 
   return (
     <div>

@@ -1,25 +1,46 @@
 import { headers }            from "next/headers";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getSession }         from "@/lib/auth";
-import { getScopedDb }        from "@/lib/db";
-import { formatCents }        from "@/lib/money";
-import Link                   from "next/link";
+import { eq, desc }            from "drizzle-orm";
+import { getSession }          from "@/lib/auth";
+import { getScopedDb }         from "@/lib/db";
+import { creatorProfile, ratePage, proposal } from "@/db/schema";
+import Link                    from "next/link";
 
 export default async function DashboardPage() {
   const { env } = getCloudflareContext();
   const session = await getSession(env.DB, await headers());
   if (!session) return null; // layout already guards; just satisfy TS
 
-  const db      = getScopedDb(env.DB, session.user.id);
+  const scoped = await getScopedDb(env.DB, session.user.id);
+  // No CreatorAccount yet → user is fresh post-signup; show onboarding banner only
+  if (!scoped) {
+    return (
+      <div style={{ padding: "40px 32px", maxWidth: 900 }}>
+        <h1 style={{ fontFamily: "var(--font-clash-display)", fontSize: "clamp(32px, 5vw, 56px)", color: "var(--paper)", margin: "0 0 6px", lineHeight: 1.05 }}>
+          Hey.
+        </h1>
+        <p style={{ fontFamily: "var(--font-general-sans)", fontSize: 15, color: "var(--paper)", opacity: 0.5, margin: "0 0 40px" }}>
+          Finish setting up your profile to get started.
+        </p>
+        <Link
+          href="/onboarding"
+          style={{ display: "inline-block", padding: "12px 24px", background: "var(--volt)", color: "var(--ink)", fontFamily: "var(--font-clash-display)", fontSize: 15, fontWeight: 700, borderRadius: "var(--r)", textDecoration: "none" }}
+        >
+          Complete onboarding →
+        </Link>
+      </div>
+    );
+  }
+  const { db, accountId } = scoped;
 
-  const [account, ratePages, proposals] = await Promise.all([
-    db.creatorAccount.findFirst({ include: { profile: true } }),
-    db.ratePage.findMany({ orderBy: { updatedAt: "desc" }, take: 5 }),
-    db.proposal.findMany({ orderBy: { updatedAt: "desc" }, take: 5 }),
+  const [profile, ratePages, proposals] = await Promise.all([
+    db.query.creatorProfile.findFirst({ where: eq(creatorProfile.accountId, accountId) }),
+    db.query.ratePage.findMany({ where: eq(ratePage.accountId, accountId), orderBy: desc(ratePage.updatedAt), limit: 5 }),
+    db.query.proposal.findMany({ where: eq(proposal.accountId, accountId), orderBy: desc(proposal.updatedAt), limit: 5 }),
   ]);
 
-  const heading = account?.profile?.displayName
-    ? `Hey, ${account.profile.displayName.split(" ")[0]}.`
+  const heading = profile?.displayName
+    ? `Hey, ${profile.displayName.split(" ")[0]}.`
     : "Hey.";
 
   return (
@@ -28,28 +49,8 @@ export default async function DashboardPage() {
         {heading}
       </h1>
       <p style={{ fontFamily: "var(--font-general-sans)", fontSize: 15, color: "var(--paper)", opacity: 0.5, margin: "0 0 40px" }}>
-        {account ? "Here's where things stand." : "Finish setting up your profile to get started."}
+        Here&apos;s where things stand.
       </p>
-
-      {!account && (
-        <Link
-          href="/onboarding"
-          style={{
-            display: "inline-block",
-            padding: "12px 24px",
-            background: "var(--volt)",
-            color: "var(--ink)",
-            fontFamily: "var(--font-clash-display)",
-            fontSize: 15,
-            fontWeight: 700,
-            borderRadius: "var(--r)",
-            textDecoration: "none",
-            marginBottom: 40,
-          }}
-        >
-          Complete onboarding →
-        </Link>
-      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 40 }}>
         <StatCard label="Rate pages" value={String(ratePages.length)} />
@@ -59,12 +60,7 @@ export default async function DashboardPage() {
       {ratePages.length > 0 && (
         <Section title="RECENT RATE PAGES">
           {ratePages.map(rp => (
-            <RowItem
-              key={rp.id}
-              label={rp.token}
-              meta={rp.status}
-              href={`/r/${rp.token}`}
-            />
+            <RowItem key={rp.id} label={rp.token} meta={rp.status} href={`/r/${rp.token}`} />
           ))}
         </Section>
       )}
@@ -72,12 +68,7 @@ export default async function DashboardPage() {
       {proposals.length > 0 && (
         <Section title="RECENT PROPOSALS">
           {proposals.map(p => (
-            <RowItem
-              key={p.id}
-              label={p.title ?? `Proposal #${p.version}`}
-              meta={p.status}
-              href={`/proposals/${p.id}`}
-            />
+            <RowItem key={p.id} label={p.title ?? `Proposal #${p.version}`} meta={p.status} href={`/proposals/${p.id}`} />
           ))}
         </Section>
       )}
@@ -113,17 +104,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function RowItem({ label, meta, href }: { label: string; meta: string; href?: string }) {
   const content = (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: "12px 16px",
-      background: "var(--ink-2)",
-      borderRadius: "var(--r)",
-      fontFamily: "var(--font-general-sans)",
-      color: "var(--paper)",
-      fontSize: 14,
-    }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "var(--ink-2)", borderRadius: "var(--r)", fontFamily: "var(--font-general-sans)", color: "var(--paper)", fontSize: 14 }}>
       <span>{label}</span>
       <span style={{ fontFamily: "var(--font-space-mono)", fontSize: 11, opacity: 0.4 }}>{meta}</span>
     </div>

@@ -1,11 +1,15 @@
-import { getPrisma }         from "@/lib/db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { formatMultiplier }  from "@/lib/money";
+import { asc } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { formatMultiplier as formatMultiplierTable } from "@/db/schema";
+import { formatMultiplier } from "@/lib/money";
 
 export default async function MultipliersPage() {
   const { env } = getCloudflareContext();
-  const prisma  = getPrisma(env.DB);
-  const rows    = await prisma.formatMultiplier.findMany({ orderBy: [{ platform: "asc" }, { deliverableType: "asc" }] });
+  const db = getDb(env.DB);
+  const rows = await db.query.formatMultiplier.findMany({
+    orderBy: [asc(formatMultiplierTable.platform), asc(formatMultiplierTable.deliverableType)],
+  });
 
   return (
     <div>

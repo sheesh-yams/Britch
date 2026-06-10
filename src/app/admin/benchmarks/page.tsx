@@ -1,11 +1,15 @@
-import { getPrisma }         from "@/lib/db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { formatCents }       from "@/lib/money";
+import { asc } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { cpmBenchmark } from "@/db/schema";
+import { formatCents } from "@/lib/money";
 
 export default async function BenchmarksPage() {
   const { env } = getCloudflareContext();
-  const prisma  = getPrisma(env.DB);
-  const rows    = await prisma.cpmBenchmark.findMany({ orderBy: [{ platform: "asc" }, { followerTier: "asc" }] });
+  const db = getDb(env.DB);
+  const rows = await db.query.cpmBenchmark.findMany({
+    orderBy: [asc(cpmBenchmark.platform), asc(cpmBenchmark.followerTier)],
+  });
 
   return (
     <div>

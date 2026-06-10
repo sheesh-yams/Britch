@@ -1,7 +1,10 @@
 import { headers }           from "next/headers";
+import { redirect }          from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { eq, desc }          from "drizzle-orm";
 import { getSession }        from "@/lib/auth";
 import { getScopedDb }       from "@/lib/db";
+import { proposal }          from "@/db/schema";
 import ProposalStatus        from "@/components/britch/ProposalStatus";
 import Link                  from "next/link";
 
@@ -10,10 +13,14 @@ export default async function ProposalsPage() {
   const session = await getSession(env.DB, await headers());
   if (!session) return null;
 
-  const db        = getScopedDb(env.DB, session.user.id);
-  const proposals = await db.proposal.findMany({
-    orderBy: { updatedAt: "desc" },
-    include: { brand: { select: { name: true } } },
+  const scoped = await getScopedDb(env.DB, session.user.id);
+  if (!scoped) redirect("/onboarding");
+  const { db, accountId } = scoped;
+
+  const proposals = await db.query.proposal.findMany({
+    where: eq(proposal.accountId, accountId),
+    orderBy: desc(proposal.updatedAt),
+    with: { brand: { columns: { name: true } } },
   });
 
   return (
@@ -32,15 +39,7 @@ export default async function ProposalsPage() {
               href={`/proposals/${p.id}`}
               style={{ textDecoration: "none" }}
             >
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "14px 18px",
-                background: "var(--ink-2)",
-                borderRadius: "var(--r)",
-                gap: 16,
-              }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "var(--ink-2)", borderRadius: "var(--r)", gap: 16 }}>
                 <div>
                   <div style={{ fontFamily: "var(--font-general-sans)", fontSize: 15, color: "var(--paper)", fontWeight: 500 }}>
                     {p.title ?? "Untitled proposal"}
@@ -52,9 +51,7 @@ export default async function ProposalsPage() {
                   )}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-                  <span style={{ fontFamily: "var(--font-space-mono)", fontSize: 11, color: "var(--paper)", opacity: 0.35 }}>
-                    v{p.version}
-                  </span>
+                  <span style={{ fontFamily: "var(--font-space-mono)", fontSize: 11, color: "var(--paper)", opacity: 0.35 }}>v{p.version}</span>
                   <ProposalStatus status={p.status} />
                 </div>
               </div>

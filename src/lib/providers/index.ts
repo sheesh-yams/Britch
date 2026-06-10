@@ -6,6 +6,7 @@
  * admin UI change — no deploy.
  */
 
+import type { DB } from "@/lib/db";
 import type { AnalyticsProvider } from "./types";
 import { SeededProvider } from "./seeded";
 import { ManualProvider, type ManualInputData } from "./manual";
@@ -17,40 +18,27 @@ export type ProviderName =
   | "HYPE_AUDITOR"
   | "DIRECT_PLATFORM";
 
-interface ProviderConfigRecord {
-  activeAnalyticsProvider: string;
-}
-
-interface PrismaLike {
-  providerConfig: {
-    findFirst(): Promise<ProviderConfigRecord | null>;
-  };
-  seedCreator: {
-    findFirst(args: unknown): Promise<unknown>;
-  };
-}
-
 /**
  * Factory: returns the active provider from ProviderConfig.
  * For MANUAL, pass manualData — the creator's entered stats.
  */
 export async function getActiveProvider(
-  prisma: PrismaLike,
-  manualData?: ManualInputData
+  db: DB,
+  manualData?: ManualInputData,
 ): Promise<AnalyticsProvider> {
-  const config = await prisma.providerConfig.findFirst();
+  const config = await db.query.providerConfig.findFirst();
   const name = (config?.activeAnalyticsProvider ?? "SEEDED") as ProviderName;
-  return buildProvider(name, prisma, manualData);
+  return buildProvider(name, db, manualData);
 }
 
 export function buildProvider(
   name: ProviderName,
-  prisma: PrismaLike,
-  manualData?: ManualInputData
+  db: DB,
+  manualData?: ManualInputData,
 ): AnalyticsProvider {
   switch (name) {
     case "SEEDED":
-      return new SeededProvider(prisma as unknown as ConstructorParameters<typeof SeededProvider>[0]);
+      return new SeededProvider(db);
     case "MANUAL":
       if (!manualData) throw new Error("ManualProvider requires manualData");
       return new ManualProvider(manualData);

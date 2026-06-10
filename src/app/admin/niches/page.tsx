@@ -1,10 +1,12 @@
-import { getPrisma }         from "@/lib/db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { asc } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { niche } from "@/db/schema";
 
 export default async function NichesPage() {
   const { env } = getCloudflareContext();
-  const prisma  = getPrisma(env.DB);
-  const niches  = await prisma.niche.findMany({ orderBy: { order: "asc" } });
+  const db = getDb(env.DB);
+  const niches = await db.query.niche.findMany({ orderBy: asc(niche.order) });
 
   return (
     <div>

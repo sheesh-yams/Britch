@@ -1,26 +1,28 @@
-import { getPrisma }         from "@/lib/db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { eq, count } from "drizzle-orm";
+import { getDb } from "@/lib/db";
+import { niche, cpmBenchmark, formatMultiplier, seedCreator, engineParams, providerConfig } from "@/db/schema";
 
 export default async function AdminDashboard() {
   const { env } = getCloudflareContext();
-  const prisma  = getPrisma(env.DB);
+  const db = getDb(env.DB);
 
-  const [niches, cpmCount, multCount, seedCount, engineParams, providerConfig] = await Promise.all([
-    prisma.niche.count({ where: { isActive: true } }),
-    prisma.cpmBenchmark.count({ where: { isActive: true } }),
-    prisma.formatMultiplier.count({ where: { isActive: true } }),
-    prisma.seedCreator.count({ where: { isActive: true } }),
-    prisma.engineParams.findFirst({ where: { isActive: true } }),
-    prisma.providerConfig.findFirst(),
+  const [nicheRows, cpmRows, multRows, seedRows, ep, pc] = await Promise.all([
+    db.select({ c: count() }).from(niche).where(eq(niche.isActive, true)),
+    db.select({ c: count() }).from(cpmBenchmark).where(eq(cpmBenchmark.isActive, true)),
+    db.select({ c: count() }).from(formatMultiplier).where(eq(formatMultiplier.isActive, true)),
+    db.select({ c: count() }).from(seedCreator).where(eq(seedCreator.isActive, true)),
+    db.query.engineParams.findFirst({ where: eq(engineParams.isActive, true) }),
+    db.query.providerConfig.findFirst(),
   ]);
 
   const stats = [
-    { label: "Active niches",          value: String(niches) },
-    { label: "CPM benchmarks",         value: String(cpmCount) },
-    { label: "Format multipliers",     value: String(multCount) },
-    { label: "Seed creators",          value: String(seedCount) },
-    { label: "Engine version",         value: engineParams ? `v${engineParams.version}` : "—" },
-    { label: "Active provider",        value: providerConfig?.activeAnalyticsProvider ?? "—" },
+    { label: "Active niches",          value: String(nicheRows[0]?.c ?? 0) },
+    { label: "CPM benchmarks",         value: String(cpmRows[0]?.c ?? 0) },
+    { label: "Format multipliers",     value: String(multRows[0]?.c ?? 0) },
+    { label: "Seed creators",          value: String(seedRows[0]?.c ?? 0) },
+    { label: "Engine version",         value: ep ? `v${ep.version}` : "—" },
+    { label: "Active provider",        value: pc?.activeAnalyticsProvider ?? "—" },
   ];
 
   return (

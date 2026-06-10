@@ -4,49 +4,34 @@
  * Looks up a SeedCreator by handle + platform from D1 and returns a
  * normalized AnalyticsSnapshot. This is what powers the onboarding
  * "enter your handle → get demo rates" flow in MVP.
- *
- * The seed creator record stores the snapshot JSON and post sample JSON,
- * both written by scripts/seed.ts from BRITCH_ARCHITECTURE.md values.
  */
 
+import { and, eq } from "drizzle-orm";
+import type { DB } from "@/lib/db";
+import { seedCreator } from "@/db/schema";
 import type { AnalyticsProvider, AnalyticsSnapshot, Platform } from "./types";
 
-// D1-compatible minimal Prisma interface (we only need findFirst here)
-interface SeedCreatorRecord {
-  handle: string;
-  platform: string;
-  displayName: string;
-  snapshot: unknown;  // parsed JSON
-  postSample: unknown;
-}
-
-interface PrismaLike {
-  seedCreator: {
-    findFirst(args: {
-      where: { handle: string; platform: string; isActive: boolean };
-    }): Promise<SeedCreatorRecord | null>;
-  };
-}
-
 export class SeededProvider implements AnalyticsProvider {
-  constructor(private readonly prisma: PrismaLike) {}
+  constructor(private readonly db: DB) {}
 
   async fetchSnapshot(handle: string, platform: Platform): Promise<AnalyticsSnapshot> {
-    // Normalize handle — strip leading @ for lookup flexibility
     const normalized = handle.startsWith("@") ? handle : `@${handle}`;
 
-    const record = await this.prisma.seedCreator.findFirst({
-      where: { handle: normalized, platform, isActive: true },
+    const record = await this.db.query.seedCreator.findFirst({
+      where: and(
+        eq(seedCreator.handle, normalized),
+        eq(seedCreator.platform, platform),
+        eq(seedCreator.isActive, true),
+      ),
     });
 
     if (!record) {
       throw new Error(
         `SeededProvider: no seed creator found for ${normalized} on ${platform}. ` +
-        `Check that scripts/seed.ts has been applied.`
+        `Check that the seed has been applied.`
       );
     }
 
-    // snapshot is stored as JSON text in D1 → Prisma parses it to object
     const snap = record.snapshot as {
       followers: number;
       engagementRateBps: number;
@@ -71,14 +56,18 @@ export class SeededProvider implements AnalyticsProvider {
   }
 
   /**
-   * Also expose post sample for use in rate engine computation.
-   * Returns only organic posts (isPaid = false).
+   * Returns only organic posts (isPaid = false). Used by the rate engine
+   * to compute avgReach from the last-20 sample.
    */
   async fetchOrganicPostViews(handle: string, platform: Platform): Promise<number[]> {
     const normalized = handle.startsWith("@") ? handle : `@${handle}`;
 
-    const record = await this.prisma.seedCreator.findFirst({
-      where: { handle: normalized, platform, isActive: true },
+    const record = await this.db.query.seedCreator.findFirst({
+      where: and(
+        eq(seedCreator.handle, normalized),
+        eq(seedCreator.platform, platform),
+        eq(seedCreator.isActive, true),
+      ),
     });
 
     if (!record) return [];

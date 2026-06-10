@@ -1,7 +1,10 @@
 import { headers }           from "next/headers";
+import { redirect }          from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { and, eq, asc, desc } from "drizzle-orm";
 import { getSession }        from "@/lib/auth";
 import { getScopedDb }       from "@/lib/db";
+import { ratePage, deliverable } from "@/db/schema";
 import { formatCents }       from "@/lib/money";
 import Link                  from "next/link";
 
@@ -10,10 +13,19 @@ export default async function RatesPage() {
   const session = await getSession(env.DB, await headers());
   if (!session) return null;
 
-  const db         = getScopedDb(env.DB, session.user.id);
+  const scoped = await getScopedDb(env.DB, session.user.id);
+  if (!scoped) redirect("/onboarding");
+  const { db, accountId } = scoped;
+
   const [ratePages, deliverables] = await Promise.all([
-    db.ratePage.findMany({ orderBy: { updatedAt: "desc" } }),
-    db.deliverable.findMany({ where: { isActive: true }, orderBy: [{ platform: "asc" }, { type: "asc" }] }),
+    db.query.ratePage.findMany({
+      where: eq(ratePage.accountId, accountId),
+      orderBy: desc(ratePage.updatedAt),
+    }),
+    db.query.deliverable.findMany({
+      where: and(eq(deliverable.accountId, accountId), eq(deliverable.isActive, true)),
+      orderBy: [asc(deliverable.platform), asc(deliverable.type)],
+    }),
   ]);
 
   return (
@@ -27,7 +39,6 @@ export default async function RatesPage() {
         </div>
       </div>
 
-      {/* Deliverables table */}
       <Section title="DELIVERABLES">
         {deliverables.length === 0 ? (
           <Empty message="No deliverables yet. Complete onboarding to generate rates." />
@@ -36,18 +47,7 @@ export default async function RatesPage() {
             {deliverables.map(d => (
               <div
                 key={d.id}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr auto auto auto",
-                  gap: 16,
-                  alignItems: "center",
-                  padding: "12px 16px",
-                  background: "var(--ink-2)",
-                  borderRadius: "var(--r)",
-                  fontFamily: "var(--font-general-sans)",
-                  fontSize: 14,
-                  color: "var(--paper)",
-                }}
+                style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 16, alignItems: "center", padding: "12px 16px", background: "var(--ink-2)", borderRadius: "var(--r)", fontFamily: "var(--font-general-sans)", fontSize: 14, color: "var(--paper)" }}
               >
                 <span>
                   {d.label ?? d.type}
@@ -68,7 +68,6 @@ export default async function RatesPage() {
         )}
       </Section>
 
-      {/* Rate pages */}
       <Section title="RATE PAGES">
         {ratePages.length === 0 ? (
           <Empty message="No rate pages yet." />
@@ -80,12 +79,8 @@ export default async function RatesPage() {
                 style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "var(--ink-2)", borderRadius: "var(--r)" }}
               >
                 <div>
-                  <span style={{ fontFamily: "var(--font-general-sans)", fontSize: 14, color: "var(--paper)" }}>
-                    {rp.token}
-                  </span>
-                  <span style={{ marginLeft: 10, fontFamily: "var(--font-space-mono)", fontSize: 11, color: "var(--paper)", opacity: 0.4 }}>
-                    {rp.status}
-                  </span>
+                  <span style={{ fontFamily: "var(--font-general-sans)", fontSize: 14, color: "var(--paper)" }}>{rp.token}</span>
+                  <span style={{ marginLeft: 10, fontFamily: "var(--font-space-mono)", fontSize: 11, color: "var(--paper)", opacity: 0.4 }}>{rp.status}</span>
                 </div>
                 <Link
                   href={`/r/${rp.token}`}

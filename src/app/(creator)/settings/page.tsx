@@ -1,15 +1,22 @@
 import { headers }           from "next/headers";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { eq }                from "drizzle-orm";
 import { getSession }        from "@/lib/auth";
 import { getScopedDb }       from "@/lib/db";
+import { creatorProfile }    from "@/db/schema";
 
 export default async function SettingsPage() {
   const { env } = getCloudflareContext();
   const session = await getSession(env.DB, await headers());
   if (!session) return null;
 
-  const db      = getScopedDb(env.DB, session.user.id);
-  const account = await db.creatorAccount.findFirst({ include: { profile: true } });
+  const scoped = await getScopedDb(env.DB, session.user.id);
+  // Profile section is skipped if no creator account; rest of page still works
+  let profile = null;
+  if (scoped) {
+    const { db, accountId } = scoped;
+    profile = await db.query.creatorProfile.findFirst({ where: eq(creatorProfile.accountId, accountId) });
+  }
 
   return (
     <div style={{ padding: "40px 32px", maxWidth: 640 }}>
@@ -22,11 +29,11 @@ export default async function SettingsPage() {
         <FieldRow label="User ID" value={session.user.id} mono />
       </Section>
 
-      {account?.profile && (
+      {profile && (
         <Section title="CREATOR PROFILE">
-          <FieldRow label="Display name"   value={account.profile.displayName ?? "—"} />
-          <FieldRow label="Niches"         value={(account.profile.niches as string[] | null)?.join(", ") || "—"} />
-          {account.profile.bio && <FieldRow label="Bio" value={account.profile.bio} />}
+          <FieldRow label="Display name"   value={profile.displayName ?? "—"} />
+          <FieldRow label="Niches"         value={(profile.niches as string[] | null)?.join(", ") || "—"} />
+          {profile.bio && <FieldRow label="Bio" value={profile.bio} />}
         </Section>
       )}
 
@@ -56,12 +63,7 @@ function FieldRow({ label, value, mono }: { label: string; value: string; mono?:
   return (
     <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", background: "var(--ink-2)", borderRadius: "var(--r)", gap: 16 }}>
       <span style={{ fontFamily: "var(--font-general-sans)", fontSize: 13, color: "var(--paper)", opacity: 0.5 }}>{label}</span>
-      <span style={{
-        fontFamily: mono ? "var(--font-space-mono)" : "var(--font-general-sans)",
-        fontSize: mono ? 11 : 14,
-        color: "var(--paper)",
-        opacity: mono ? 0.6 : 1,
-      }}>{value}</span>
+      <span style={{ fontFamily: mono ? "var(--font-space-mono)" : "var(--font-general-sans)", fontSize: mono ? 11 : 14, color: "var(--paper)", opacity: mono ? 0.6 : 1 }}>{value}</span>
     </div>
   );
 }

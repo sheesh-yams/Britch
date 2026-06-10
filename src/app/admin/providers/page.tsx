@@ -1,10 +1,10 @@
-import { getPrisma }         from "@/lib/db";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getDb } from "@/lib/db";
 
 export default async function ProvidersPage() {
-  const { env }    = getCloudflareContext();
-  const prisma     = getPrisma(env.DB);
-  const config     = await prisma.providerConfig.findFirst();
+  const { env } = getCloudflareContext();
+  const db = getDb(env.DB);
+  const config = await db.query.providerConfig.findFirst();
 
   return (
     <div>

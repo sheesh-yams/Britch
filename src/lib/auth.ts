@@ -1,5 +1,5 @@
 /**
- * Better Auth config — confirmed working on Workers/OpenNext (see SPIKES.md)
+ * Better Auth config — Drizzle + D1.
  *
  * Pattern: factory function, NOT a module-level singleton.
  * D1 binding is request-scoped in Workers, so auth must be created per-request.
@@ -8,24 +8,32 @@
  * No separate KV session store needed — KV remains dedicated to OpenNext cache.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { betterAuth }    = require("better-auth");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { prismaAdapter } = require("@better-auth/prisma-adapter");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { nextCookies }   = require("better-auth/next-js");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { getPrisma }     = require("./db");
+import { betterAuth }       from "better-auth";
+import { drizzleAdapter }   from "@better-auth/drizzle-adapter";
+import { nextCookies }      from "better-auth/next-js";
+import { getDb }            from "./db";
+import * as schema          from "@/db/schema";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createAuth(d1: CloudflareEnv["DB"]): any {
-  const prisma = getPrisma(d1);
+  const db = getDb(d1);
 
   return betterAuth({
     secret:  process.env.BETTER_AUTH_SECRET ?? "",
     baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
 
-    database: prismaAdapter(prisma, { provider: "sqlite" }),
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+      // Our columns are camelCase (emailVerified, expiresAt, ...). Without this,
+      // the adapter would generate snake_case (email_verified) and fail to find columns.
+      camelCase: true,
+      schema: {
+        user:         schema.user,
+        session:      schema.session,
+        account:      schema.account,
+        verification: schema.verification,
+      },
+    }),
 
     plugins: [nextCookies()],
 
@@ -39,8 +47,7 @@ export function createAuth(d1: CloudflareEnv["DB"]): any {
 
     user: {
       additionalFields: {
-        // isAdmin drives /admin role guard — set manually in DB for now
-        // (No self-serve admin signup; set via wrangler d1 execute)
+        // role drives /admin gate — set manually in DB ("USER" | "ADMIN")
         role: {
           type: "string" as const,
           defaultValue: "USER",
@@ -54,13 +61,12 @@ export function createAuth(d1: CloudflareEnv["DB"]): any {
 /**
  * Get the current session from a server component or server action.
  *
- * Usage:
  *   import { headers } from "next/headers";
  *   const session = await getSession(env.DB, await headers());
  */
 export async function getSession(
   d1: CloudflareEnv["DB"],
-  requestHeaders: Headers
+  requestHeaders: Headers,
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any | null> {
   const auth = createAuth(d1);
@@ -73,7 +79,7 @@ export async function getSession(
  */
 export async function requireSession(
   d1: CloudflareEnv["DB"],
-  requestHeaders: Headers
+  requestHeaders: Headers,
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   const session = await getSession(d1, requestHeaders);
