@@ -23,6 +23,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("identity");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Form state
   const [displayName, setDisplayName] = useState("");
@@ -39,18 +40,24 @@ export default function OnboardingPage() {
 
   async function handleFinish() {
     setSaving(true);
+    setError(null);
     try {
-      // POST to server action — wired in full build
-      await fetch("/api/onboarding", {
+      const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ displayName, niche, bio, platforms, handles, followers, engagement }),
       });
-    } catch {
-      // Non-critical for MVP demo — proceed to dashboard
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        setError(data.error ?? `Save failed (${res.status}). Please try again.`);
+        setSaving(false);
+        return;
+      }
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Network error. Please try again.");
+      setSaving(false);
     }
-    setSaving(false);
-    router.push("/dashboard");
   }
 
   return (
@@ -135,6 +142,11 @@ export default function OnboardingPage() {
                 </div>
               </div>
             ))}
+            {error && (
+              <div style={{ padding: "10px 12px", background: "rgba(255,67,101,0.1)", borderRadius: "var(--r)", fontFamily: "var(--font-general-sans)", fontSize: 13, color: "var(--flush)" }}>
+                {error}
+              </div>
+            )}
             <div style={{ display: "flex", gap: 12 }}>
               <SecondaryButton onClick={() => setStep("platform")}>← Back</SecondaryButton>
               <PrimaryButton onClick={handleFinish} disabled={saving}>
