@@ -12,12 +12,13 @@ import ProposalStatus        from "@/components/britch/ProposalStatus";
 
 export const dynamic = "force-dynamic";
 
-export default async function PublicProposalPage({ params }: { params: { token: string } }) {
+export default async function PublicProposalPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
   const { env } = getCloudflareContext();
   const prisma  = getPrisma(env.DB);
 
   const proposal = await prisma.proposal.findUnique({
-    where:   { token: params.token },
+    where:   { token },
     include: { brand: { select: { name: true } } },
   });
 

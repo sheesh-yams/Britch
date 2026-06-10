@@ -12,7 +12,7 @@
  * Admin actions import getPrisma() directly and are quarantined in src/admin/actions.ts.
  */
 
-import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { PrismaD1 } from "@prisma/adapter-d1";
 
 // Creator-scoped models — every query on these MUST include accountId

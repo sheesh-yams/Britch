@@ -5,8 +5,8 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev --turbopack",
-    "build": "if [ \"$NEXT_BUILD_ONLY\" = \"1\" ]; then next build; else NEXT_BUILD_ONLY=1 npx @opennextjs/cloudflare build; fi",
-    "build:next": "next build",
+    "build": "if [ \"$NEXT_BUILD_ONLY\" = \"1\" ]; then next build --webpack; else NEXT_BUILD_ONLY=1 npx @opennextjs/cloudflare build; fi",
+    "build:next": "next build --webpack",
     "build:worker": "npx @opennextjs/cloudflare build",
     "start": "next start",
     "preview": "npx wrangler dev",
@@ -27,7 +27,6 @@
     "prisma": "^7.8.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "resend": "^6.12.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {

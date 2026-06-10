@@ -7,14 +7,15 @@ import { formatCents }       from "@/lib/money";
 import ProposalStatus        from "@/components/britch/ProposalStatus";
 import Link                  from "next/link";
 
-export default async function ProposalDetailPage({ params }: { params: { id: string } }) {
+export default async function ProposalDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const { env } = getCloudflareContext();
   const session = await getSession(env.DB, await headers());
   if (!session) return null;
 
   const db       = getScopedDb(env.DB, session.user.id);
   const proposal = await db.proposal.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       brand:         true,
       workItems:     true,

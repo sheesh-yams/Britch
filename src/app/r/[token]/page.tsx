@@ -81,11 +81,11 @@ async function logView(prisma: ReturnType<typeof getPrisma>, ratePageId: string,
 export default async function RatePagePublic({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
+  const { token } = await params;
   const { env } = getCloudflareContext();
   const prisma      = getPrisma(env.DB);
-  const token       = params.token;
 
   // 1. Fetch RatePage
   const ratePage = await prisma.ratePage.findUnique({
